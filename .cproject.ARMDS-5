@@ -5,9 +5,9 @@
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="ilg.gnuarmeclipse.managedbuild.cross.config.elf.debug.2093926385" moduleId="org.eclipse.cdt.core.settings" name="Debug">
 				<externalSettings>
 					<externalSetting>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/firmware"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/firmware/Debug"/>
-						<entry flags="RESOLVED" kind="libraryFile" name="firmware" srcPrefixMapping="" srcRootPath=""/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/freertos"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/freertos/Debug"/>
+						<entry flags="RESOLVED" kind="libraryFile" name="freertos" srcPrefixMapping="" srcRootPath=""/>
 					</externalSetting>
 				</externalSettings>
 				<extensions>
@@ -25,7 +25,7 @@
 							<option id="com.arm.toolchain.v6.base.options.floatabi.279487059" name="Float ABI" superClass="com.arm.toolchain.v6.base.options.floatabi" useByScannerDiscovery="false" value="com.arm.tool.c.compiler.v6.base.option.floatabi.soft" valueType="enumerated"/>
 							<option id="com.arm.toolchain.v6.base.options.inst.1878540083" name="Instruction set" superClass="com.arm.toolchain.v6.base.options.inst" useByScannerDiscovery="false" value="com.arm.tool.c.compiler.v6.base.option.inst.thumb" valueType="enumerated"/>
 							<targetPlatform id="com.arm.toolchain.v6.1102283039.2040077199" name=""/>
-							<builder buildPath="${workspace_loc:/firmware}/Debug" id="com.arm.toolchain.v6.builder.1268736140" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="com.arm.toolchain.v6.builder"/>
+							<builder buildPath="${workspace_loc:/freertos}/Debug" id="com.arm.toolchain.v6.builder.1268736140" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" superClass="com.arm.toolchain.v6.builder"/>
 							<tool id="com.arm.tool.c.compiler.v6.1818761543" name="Arm C Compiler 6" superClass="com.arm.tool.c.compiler.v6">
 								<option defaultValue="com.arm.tool.c.compiler.v6.base.option.optlevel.min" id="com.arm.tool.c.compiler.v6.base.option.optlevel.1437753259" name="Optimization level" superClass="com.arm.tool.c.compiler.v6.base.option.optlevel" useByScannerDiscovery="true" valueType="enumerated"/>
 								<option defaultValue="com.arm.tool.c.compiler.v6.base.options.debug.level.std" id="com.arm.tool.c.compiler.v6.base.options.debug.level.734014119" name="Debug Level" superClass="com.arm.tool.c.compiler.v6.base.options.debug.level" useByScannerDiscovery="true" valueType="enumerated"/>
@@ -93,7 +93,7 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="firmware.ilg.gnuarmeclipse.managedbuild.cross.target.elf.373472964" name="Executable" projectType="ilg.gnuarmeclipse.managedbuild.cross.target.elf"/>
+		<project id="freertos.ilg.gnuarmeclipse.managedbuild.cross.target.elf.373472964" name="Executable" projectType="ilg.gnuarmeclipse.managedbuild.cross.target.elf"/>
 	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
@@ -104,7 +104,7 @@
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName="Debug">
-			<resource resourceType="PROJECT" workspacePath="/firmware"/>
+			<resource resourceType="PROJECT" workspacePath="/freertos"/>
 		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>

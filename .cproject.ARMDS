@@ -11,11 +11,11 @@
                     					
                     <externalSetting>
                         						
-                        <entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/firmware"/>
+                        <entry flags="VALUE_WORKSPACE_PATH" kind="includePath" name="/freertos"/>
                         						
-                        <entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/firmware/Debug"/>
+                        <entry flags="VALUE_WORKSPACE_PATH" kind="libraryPath" name="/freertos/Debug"/>
                         						
-                        <entry flags="RESOLVED" kind="libraryFile" name="firmware" srcPrefixMapping="" srcRootPath=""/>
+                        <entry flags="RESOLVED" kind="libraryFile" name="freertos" srcPrefixMapping="" srcRootPath=""/>
                         					
                     </externalSetting>
                     				
@@ -51,7 +51,7 @@
                             							
                             <targetPlatform id="com.arm.toolchain.v6.base.var.arm_compiler_6-6.1001681804.1056910139" name=""/>
                             							
-                            <builder autoBuildTarget="all" buildPath="${workspace_loc:/firmware}/Debug" cleanBuildTarget="clean" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="com.arm.toolchain.v6.builder.212090153" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="false" superClass="com.arm.toolchain.v6.builder"/>
+                            <builder autoBuildTarget="all" buildPath="${workspace_loc:/freertos}/Debug" cleanBuildTarget="clean" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="com.arm.toolchain.v6.builder.212090153" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="false" superClass="com.arm.toolchain.v6.builder"/>
                             							
                             <tool id="com.arm.tool.c.compiler.v6.base.var.arm_compiler_6-6.242458324" name="Arm C Compiler 6" superClass="com.arm.tool.c.compiler.v6.base.var.arm_compiler_6-6">
                                 								
@@ -201,7 +201,7 @@
     	
     <storageModule moduleId="cdtBuildSystem" version="4.0.0">
         		
-        <project id="firmware.ilg.gnuarmeclipse.managedbuild.cross.target.elf.373472964" name="Executable"/>
+        <project id="freertos.ilg.gnuarmeclipse.managedbuild.cross.target.elf.373472964" name="Executable"/>
         	
     </storageModule>
     	
@@ -223,7 +223,7 @@
         		
         <configuration configurationName="Debug">
             			
-            <resource resourceType="PROJECT" workspacePath="/firmware"/>
+            <resource resourceType="PROJECT" workspacePath="/freertos"/>
             		
         </configuration>
         	
