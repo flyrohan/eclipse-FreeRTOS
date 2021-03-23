@@ -1,0 +1,40 @@
+#! armclang -E --target=arm-arm-none-eabi -mcpu=cortex-m0 -xc
+#if 0
+#define ROM_BASE 	0x10000000
+#define ROM_SIZE	0x20000
+#define RAM_BASE	0x20000000
+#define RAM_SIZE	0x8000
+#else
+#define ROM_BASE 	0x20000000
+#define ROM_SIZE	0x5000
+#define RAM_BASE	0x20005000
+#define RAM_SIZE	0x3000
+#endif
+
+#define STACK_BASE (RAM_BASE + RAM_SIZE)
+#define STACK_SIZE 0x400
+
+LOAD_REGION ROM_BASE ROM_SIZE
+{
+  VECTORS +0
+  {
+    vectors_nxve1000.o (isr_vector, +FIRST)
+  }
+
+  ; Code is placed immediately (+0) after the previous root region
+  ; (so code region will also be a root region)
+  CODE +0
+  {
+    * (+RO)           ; All program code, including library code
+  }
+
+  DATA RAM_BASE (RAM_SIZE - STACK_SIZE)
+  {
+    * (+RW, +ZI)      ; All RW and ZI data
+  }
+
+  ; The Main Stack Pointer is initialized on reset to the top addresses of this region
+  ARM_LIB_STACKHEAP (STACK_BASE - STACK_SIZE) EMPTY STACK_SIZE
+  {
+  }
+}
