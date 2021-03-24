@@ -1,7 +1,7 @@
 #ifndef _CMD_ENTRY_H_
 #define _CMD_ENTRY_H_
 
-#include <list.h>
+#include <_list.h>
 
 typedef struct __CMD_Entry {
     char *name;
