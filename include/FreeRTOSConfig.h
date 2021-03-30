@@ -43,6 +43,12 @@
 #include <stdint.h>
 #endif
 
+#include <config.h>
+#ifdef RTOS_ENABLED
+
+#define	SystemCoreClock		SYSTEM_CLOCK
+void xPortSysTickHandler(void);
+
 //-------- <<< Use Configuration Wizard in Context Menu >>> --------------------
 
 //  <o>Minimal stack size [words] <0-65535>
@@ -58,7 +64,7 @@
 //  <o>Kernel tick frequency [Hz] <0-0xFFFFFFFF>
 //  <i> Kernel tick rate in Hz.
 //  <i> Default: 1000
-#define configTICK_RATE_HZ                      ((TickType_t)1000)
+#define configTICK_RATE_HZ                      ((TickType_t)SYSTEM_TICK_HZ)
 
 //  <o>Timer task stack depth [words] <0-65535>
 //  <i> Stack for timer task in words.
@@ -187,7 +193,7 @@
 //  <i> Using Floating Point Unit (FPU) affects context handling.
 //  <i> Enable FPU when application uses floating point operations.
 //  <i> Default: 1
-#define configENABLE_FPU                      1
+#define configENABLE_FPU                      0
 
 //  <q>Use Memory Protection Unit
 //  <i> Using Memory Protection Unit (MPU) requires detailed memory map definition.
@@ -204,7 +210,7 @@
 //  <i> Using TrustZone affects context handling.
 //  <i> Enable TrustZone when FreeRTOS runs on the Non-Secure side and calls functions from the Secure side.
 //  <i> Default: 1
-#define configENABLE_TRUSTZONE                1
+#define configENABLE_TRUSTZONE                0
 
 //  <o>Minimal secure stack size [words] <0-65535>
 //  <i> Stack for idle task Secure side context in words.
@@ -212,6 +218,9 @@
 //  <i> Default: 128
 #define configMINIMAL_SECURE_STACK_SIZE       ((uint32_t)128)
 // </h>
+
+// goto WFI on IDLE status
+#define configUSE_TICKLESS_IDLE					1
 
 //------------- <<< end of configuration section >>> ---------------------------
 
@@ -253,4 +262,5 @@
 /* Ensure Cortex-M port compatibility. */
 #define SysTick_Handler                         xPortSysTickHandler
 
+#endif /* RTOS_ENABLED */
 #endif /* FREERTOS_CONFIG_H */
