@@ -1,6 +1,7 @@
 #include <string.h>
 #include <cmsis_device.h>
 #include <config.h>
+#include <rtos.h>
 
 #ifdef CLI_ENABLED
 
@@ -103,4 +104,24 @@ void CLI_RunLoop(void)
 			CMD_Run(cli_buffer);
 	}
 }
+
+#ifdef RTOS_ENABLED
+static void CLI_LoopThread(void *argument __attribute__((unused)))
+{
+	for ( ; ; )
+		CLI_RunLoop();
+}
+
+static TaskHandle_t CLI_Handle = NULL;
+
+int CLI_RunLoopThread(uint32_t stacksize, int priority)
+{
+    return xTaskCreate(CLI_LoopThread,
+    					"CLI-Task",
+    					(const configSTACK_DEPTH_TYPE )stacksize,
+						NULL,
+						(UBaseType_t)priority,
+						&CLI_Handle);
+}
+#endif /* RTOS_ENABLED */
 #endif
