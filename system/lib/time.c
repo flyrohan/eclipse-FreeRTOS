@@ -12,12 +12,17 @@ void SysTime_Delay(int us)
 		time_op->Delay(us);
 }
 
-uint64_t SysTime_GetTick(void)
+uint64_t SysTime_GetTickUS(void)
 {
-	if (time_op->GetTick)
-		return time_op->GetTick();
+	if (time_op->GetTickUS)
+		return time_op->GetTickUS();
 
 	return 0;
+}
+
+uint64_t SysTime_GetTick(void)
+{
+	return SysTime_GetTickUS() / 1000;
 }
 
 void SysTime_Register(SysTime_Op *op)

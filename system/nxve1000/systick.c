@@ -16,7 +16,7 @@ static struct __attribute__((__packed__)) _SYSTICK_ {
 	.timestamp = 0,
 };
 
-static uint64_t SysTick_GetTick(void)
+static uint64_t SysTick_GetTickUS(void)
 {
 #if (SYSTICK_IRQ_MODE)
 	uint64_t time;
@@ -60,9 +60,9 @@ static void SysTick_Delay(int ms)
 			break;
 	};
 #else
-	uint64_t end = SysTick_GetTick() + (uint64_t)ms * 1000;
+	uint64_t end = SysTick_GetTickUS() + (uint64_t)ms * 1000;
 
-	while (SysTick_GetTick() < end) {
+	while (SysTick_GetTickUS() < end) {
 			;
 	};
 #endif
@@ -100,7 +100,7 @@ int SysTick_Init(unsigned int clock, int hz)
 
 static SysTime_Op SysTick_Op = {
 	.Delay = SysTick_Delay,
-	.GetTick = SysTick_GetTick,
+	.GetTickUS = SysTick_GetTickUS,
 };
 
 void SysTick_Register(unsigned int clock, int hz)

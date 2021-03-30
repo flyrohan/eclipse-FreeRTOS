@@ -44,7 +44,7 @@ static struct __attribute__((__packed__)) _TIMER_ {
 	.lastdec = 0,
 };
 
-static uint64_t TIMER_GetTick(void)
+static uint64_t TIMER_GetTickUS(void)
 {
 	uint64_t time = _timer.timestamp;
 	uint32_t lastdec = _timer.lastdec;
@@ -65,9 +65,9 @@ static void TIMER_Delay(int ms)
 {
 #if TIMER_IRQ_MODE
 #else
-	uint64_t end = TIMER_GetTick() + (uint64_t)ms * 1000;
+	uint64_t end = TIMER_GetTickUS() + (uint64_t)ms * 1000;
 
-	while (TIMER_GetTick() < end) {
+	while (TIMER_GetTickUS() < end) {
 			;
 	};
 #endif
@@ -95,7 +95,7 @@ static void TIMER_Stop(void)
 	writel(_mask(_timer.base->TCON, TCON_START), &_timer.base->TCON);
 }
 
-int TIMER_Init(int ch, unsigned int clock, int hz)
+int TIMER_Init(int ch, unsigned int clock, int hz  __attribute__((unused)))
 {
 	unsigned int count = TIMER_MAX_COUNT;
 	int scale;
@@ -119,7 +119,7 @@ int TIMER_Init(int ch, unsigned int clock, int hz)
 
 static SysTime_Op Timer_Op = {
 	.Delay = TIMER_Delay,
-	.GetTick = TIMER_GetTick,
+	.GetTickUS = TIMER_GetTickUS,
 };
 
 void TIMER_Register(int ch, unsigned int clock, int hz)

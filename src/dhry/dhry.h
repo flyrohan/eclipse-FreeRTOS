@@ -371,7 +371,7 @@ static long time(int n) {
 
 #ifdef MSC_CLOCK
 #define HZ				1000000	/* default 1000, GetTick return US unit */
-#define clock()			((long int)SysTime_GetTick())
+#define clock()			((long int)SysTime_GetTickUS())
 #endif
 
 #define printf(msg...)	Printf(msg)
