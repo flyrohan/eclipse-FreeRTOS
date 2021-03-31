@@ -1,8 +1,10 @@
+#include <stdbool.h>
 #include <cmsis_device.h>
 #include <timer.h>
 #include <time.h>
 #include <io.h>
 #include <config.h>
+#include <ExceptionHandlers.h>
 
 #ifdef TIMER_ENABLED
 
@@ -39,11 +41,14 @@ static struct __attribute__((__packed__)) _TIMER_ {
 	Timer_Reg *base;
 	uint64_t timestamp;
 	uint32_t lastdec;
+	int irqno;
 } _timer = {
 	.timestamp = 0,
 	.lastdec = 0,
+	.irqno = TIMER0_IRQn,
 };
 
+#ifndef RTOS_ENABLED
 static uint64_t TIMER_GetTickUS(void)
 {
 	uint64_t time = _timer.timestamp;
@@ -63,15 +68,47 @@ static uint64_t TIMER_GetTickUS(void)
 
 static void TIMER_Delay(int ms)
 {
-#if TIMER_IRQ_MODE
-#else
 	uint64_t end = TIMER_GetTickUS() + (uint64_t)ms * 1000;
 
 	while (TIMER_GetTickUS() < end) {
 			;
 	};
-#endif
 }
+static SysTime_Op SysTick_Op = {
+	.Delay = TIMER_Delay,
+	.GetTickUS = TIMER_GetTickUS,
+};
+#else
+#include <rtos.h>
+
+void Timer_Handler(void)
+{
+	writel(TINT_STATUS | TINT_ENABLE, &_timer.base->TINT_CSTAT);
+	xPortSysTickHandler();
+}
+
+static void rtos_Delay(int ms)
+{
+	vTaskDelay((TickType_t)ms);
+}
+
+static uint64_t rtos_GetTickUS(void)
+{
+	return (uint64_t)(xTaskGetTickCount() * 1000);
+}
+
+static SysTime_Op SysTick_Op = {
+	.Delay = rtos_Delay,
+	.GetTickUS = rtos_GetTickUS,
+};
+
+/* Prevent Cortex-M0 systick irq enable */
+extern void vPortSetupTimerInterrupt(void);
+
+void vPortSetupTimerInterrupt(void)
+{
+}
+#endif
 
 static void TIMER_Config(int mux, int scale, unsigned int count)
 {
@@ -81,50 +118,56 @@ static void TIMER_Config(int mux, int scale, unsigned int count)
 	writel(count, &_timer.base->TCMPB);
 }
 
-static void TIMER_Start(void)
+static void TIMER_Start(bool irqenb)
 {
-#if TIMER_IRQ_MODE
-	writel(readl(&_timer.base->TINT_CSTAT) | TINT_ENABLE, &_timer.base->TINT_CSTAT);
-#endif
+	if (irqenb)
+    	writel(TINT_STATUS | TINT_ENABLE, &_timer.base->TINT_CSTAT);
+
 	writel((readl(&_timer.base->TCON) | TCON_MANUALUPDATE), &_timer.base->TCON);
 	writel(TCON_AUTORELOAD | TCON_START, &_timer.base->TCON);
 }
 
 static void TIMER_Stop(void)
 {
+	writel(0x0, &_timer.base->TINT_CSTAT);
 	writel(_mask(_timer.base->TCON, TCON_START), &_timer.base->TCON);
 }
 
 int TIMER_Init(int ch, unsigned int clock, int hz  __attribute__((unused)))
 {
-	unsigned int count = TIMER_MAX_COUNT;
+	unsigned int count;
+	bool irqenb;
 	int scale;
 	
 	if (ch > 7)
 		return -1;
 
 	_timer.base = (void *)(TIMER_PHY_BASE + (TIMER_CH_OFFSET * ch));
+	_timer.irqno = TIMER0_IRQn + ch;
 
-#if TIMER_IRQ_MODE
-	count = TIMER_CLOCK_HZ;
-#endif
+#ifdef RTOS_ENABLED
+	irqenb = true;
+	count = (unsigned int)hz;
 	scale = (int)clock / TIMER_CLOCK_HZ;
+
+	NVIC_SetPriority(_timer.irqno, 0);
+	NVIC_EnableIRQ(_timer.irqno);
+#else
+	irqenb = false;
+	count = TIMER_MAX_COUNT;
+	scale = (int)clock / TIMER_CLOCK_HZ;
+#endif
 
 	TIMER_Stop();
 	TIMER_Config(TIMER_MUX_SEL, scale, count);
-	TIMER_Start();
+	TIMER_Start(irqenb);
 
 	return 0;
 }
 
-static SysTime_Op Timer_Op = {
-	.Delay = TIMER_Delay,
-	.GetTickUS = TIMER_GetTickUS,
-};
-
 void TIMER_Register(int ch, unsigned int clock, int hz)
 {
 	TIMER_Init(ch, clock, hz);
-	SysTime_Register(&Timer_Op);
+	SysTime_Register(&SysTick_Op);
 }
 #endif
