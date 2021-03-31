@@ -91,7 +91,22 @@ pHandler __isr_vectors[] =
 
         // ----------------------------------------------------------------------
         // NXVE1000 vectors
-        DeviceInterrupt_Handler,                  // Device specific
+		DeviceInterrupt_Handler,	// (0)
+		DeviceInterrupt_Handler,	// (1)
+		DeviceInterrupt_Handler,	// (2)
+		DeviceInterrupt_Handler,	// (3)
+		DeviceInterrupt_Handler,	// (4)
+		DeviceInterrupt_Handler,	// (5)
+		DeviceInterrupt_Handler,	// (6)
+		DeviceInterrupt_Handler,	// (7)
+		DeviceInterrupt_Handler,	// (8)
+		DeviceInterrupt_Handler,	// (9)
+		DeviceInterrupt_Handler,	// (10)
+		DeviceInterrupt_Handler,	// (11)
+		DeviceInterrupt_Handler,	// (12)
+		DeviceInterrupt_Handler,	// (14)
+		Timer_Handler,                          	// Timer handler
+        DeviceInterrupt_Handler,					// Device specific
     // TODO: rename and add more vectors here
     };
 
@@ -108,3 +123,11 @@ Default_Handler(void)
     }
 }
 // ----------------------------------------------------------------------------
+
+void __attribute__ ((section(".after_vectors"),weak))
+Timer_Handler(void)
+{
+	// DO NOT loop, just return.
+	// Useful in case someone (like STM HAL) inadvertently enables SysTick.
+}
+

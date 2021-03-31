@@ -76,10 +76,14 @@ typedef enum IRQn
   SysTick_IRQn                  = -1,       /*!< 15 System Tick Interrupt                         */
 
 /******  Device Specific Interrupt Numbers ********************************************************/
-/* ToDo: add here your device specific external interrupt numbers
-         according the interrupt handlers defined in startup_Device.s
-         eg.: Interrupt for Timer#1       TIM1_IRQHandler   ->   TIM1_IRQn                        */
-  DeviceInterrupt_IRQn        = 0,        /*!< Device Interrupt                                 */
+	TIMER0_IRQn                   = 14,     /*!< TIMER0 Interrupt */
+	TIMER1_IRQn                   = 15,     /*!< TIMER1 Interrupt */
+	TIMER2_IRQn                   = 16,     /*!< TIMER2 Interrupt */
+	TIMER3_IRQn                   = 17,     /*!< TIMER3 Interrupt */
+	TIMER4_IRQn                   = 18,     /*!< TIMER4 Interrupt */
+	TIMER5_IRQn                   = 19,     /*!< TIMER5 Interrupt */
+	TIMER6_IRQn                   = 20,     /*!< TIMER6 Interrupt */
+	TIMER7_IRQn                   = 21,     /*!< TIMER7 Interrupt */
 } IRQn_Type;
 
 
