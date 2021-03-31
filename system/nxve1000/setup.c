@@ -32,19 +32,20 @@
 #include <init.h>
 #include <config.h>
 
-#ifdef HAL_INIT
-
 #define GPIO_UART_TX	24
 #define GPIO_UART_RX	25
+#define EFLASH_FIX_SPEEAD
 
 static void SYS_eFlashInit(void)
 {
+#ifdef EFLASH_FIX_SPEEAD
 	/* eflash timing: TRCK0, TRCK1, TWCMH, TWCK0, ERASE_READY_DOWN_ENB */
 	*(uint32_t *)0x42010018 = 0x0; // 0x9
 	*(uint32_t *)0x4201001c = 0x0; // 0x9
 	*(uint32_t *)0x42010028 = 0x0; // 0xD
 	*(uint32_t *)0x4201002c = 0x0; // 0x9
 	*(uint32_t *)0x4201004C = 0x1;
+#endif
 }
 
 static void SYS_GpioInit(void)
@@ -54,24 +55,25 @@ static void SYS_GpioInit(void)
 }
 
 SYSTEM_INIT(HAL_SystemInit);
-void __attribute__ ((weak))
-HAL_SystemInit(void)
+void __attribute__((weak)) HAL_SystemInit(void)
 {
 	System_Remap();
-	PLL_SetFrequency(SYSTEM_CLOCK);
 
-#ifdef SYSTICK_ENABLED
-	SysTick_Register(SYSTEM_CLOCK, SYSTEM_TICK_HZ);
-#endif
-#ifdef TIMER_ENABLED
-	TIMER_Register(0, SYSTEM_CLOCK, SYSTEM_TICK_HZ);
-#endif
+	PLL_SetFrequency(SYSTEM_CLOCK);
 
 	SYS_eFlashInit();
 	SYS_GpioInit();
+
 #ifdef UART_ENABLED
-	UART_ConsoleRegister(0, SYSTEM_CLOCK);
+	UART_ConsoleRegister(UART_CHANNEL, SYSTEM_CLOCK);
+#endif
+
+#ifndef RTOS_ENABLED
+	#if defined(SYSTICK_ENABLED)
+	SysTick_Register(SYSTEM_CLOCK, SYSTEM_TICK_HZ);
+	#elif defined(TIMER_ENABLED)
+	TIMER_Register(0, SYSTEM_CLOCK, SYSTEM_TICK_HZ);
+	#endif
 #endif
 }
 
-#endif
