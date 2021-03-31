@@ -2,7 +2,7 @@
 #include <cmsis_device.h>
 #include <config.h>
 
-#ifdef SYSTIME_ENABLED
+#ifdef SYSTEM_TIME_ENABLED
 
 static SysTime_Op *time_op;
 
