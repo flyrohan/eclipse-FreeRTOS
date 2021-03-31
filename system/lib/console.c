@@ -289,5 +289,12 @@ void Console_Register(Console_Op *console)
 {
 	console_op = console;
 }
-
+#else
+void Putc(const char c __attribute__((unused))) { }
+void Puts(const char *s __attribute__((unused))) { }
+int Getc(void) { return 0; }
+int isCtrlc(int c __attribute__((unused))) { return 1; }
+int Tstc(void) { return 0; }
+int Printf(const char *fmt __attribute__((unused)), ...) { return 0; }
+void Console_Register(Console_Op *console __attribute__((unused))) { }
 #endif
