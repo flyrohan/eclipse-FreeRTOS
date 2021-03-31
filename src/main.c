@@ -36,11 +36,10 @@
 static void RunCLI(void)
 {
 	Printf("\r\n\r\n***** FREERTOS %ld MHZ *****\r\n\r\n", _MHZ(SYSTEM_CLOCK));
-	HAL_RTOSInit(SYSTEM_CLOCK/SYSTEM_TICK_HZ);
 #ifdef CLI_ENABLED
 	CLI_RunLoopThread(1024, osPriorityLow);
 #endif
-	vTaskStartScheduler();
+	HAL_RunRTOS();
 }
 #else
 static void RunCLI(void)
