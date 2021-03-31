@@ -14,7 +14,6 @@ typedef enum  {
   osPriorityError         =  0x84        ///< system cannot determine priority or thread has illegal priority
 } osPriority;
 
-void HAL_RTOSInit(uint32_t ticks);
-void HAL_IncTick(void);
+void HAL_RunRTOS(void);
 
 #endif

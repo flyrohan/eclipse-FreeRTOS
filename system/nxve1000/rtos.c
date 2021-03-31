@@ -6,37 +6,20 @@
 
 #ifdef RTOS_ENABLED
 
-#ifdef RTOS_TICK_SYSTICK
-void HAL_IncTick(void)
+static void	rtos_TimerInit(void)
 {
-	SysTick_Handler();
-}
+	SysTick->CTRL  &= ~(SysTick_CTRL_ENABLE_Msk); /* Disable SysTick IRQ and SysTick Timer */
+
+#if defined(SYSTICK_ENABLED)
+	SysTick_Register(SYSTEM_CLOCK, SYSTEM_TICK_HZ);
+#elif defined(TIMER_ENABLED)
+	TIMER_Register(0, SYSTEM_CLOCK, SYSTEM_TICK_HZ);
 #endif
-
-static void	 rtos_Delay(int ms)
-{
-	vTaskDelay((TickType_t)ms);
 }
 
-static uint64_t rtos_GetTickUS(void)
+void __attribute__((weak)) HAL_RunRTOS(void)
 {
-	return (uint64_t)(xTaskGetTickCount() * 1000);
+	rtos_TimerInit();
+	vTaskStartScheduler();
 }
-
-static SysTime_Op Tick_Op = {
-	.Delay = rtos_Delay,
-	.GetTickUS = rtos_GetTickUS,
-};
-
-void HAL_RTOSInit(uint32_t ticks)
-{
-#ifdef RTOS_TICK_SYSTICK
-	SysTick_Config(ticks);
-#else
-	#error "Not implemented RTOS Tick..."
-#endif
-
-	SysTime_Register(&Tick_Op);
-}
-
 #endif
