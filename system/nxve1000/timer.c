@@ -102,13 +102,6 @@ static SysTime_Op SysTick_Op = {
 	.Delay = rtos_Delay,
 	.GetTickUS = rtos_GetTickUS,
 };
-
-/* Prevent Cortex-M0 systick irq enable */
-extern void vPortSetupTimerInterrupt(void);
-
-void vPortSetupTimerInterrupt(void)
-{
-}
 #endif
 
 static void TIMER_Config(int mux, int scale, unsigned int count)
