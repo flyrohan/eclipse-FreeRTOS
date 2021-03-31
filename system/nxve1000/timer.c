@@ -74,7 +74,8 @@ static void TIMER_Delay(int ms)
 			;
 	};
 }
-static SysTime_Op SysTick_Op = {
+
+static SysTime_Op SysTick_Op __attribute__((unused)) = {
 	.Delay = TIMER_Delay,
 	.GetTickUS = TIMER_GetTickUS,
 };
@@ -165,9 +166,12 @@ int TIMER_Init(int ch, unsigned int clock, int hz  __attribute__((unused)))
 	return 0;
 }
 
+#ifdef SYSTEM_TIME_ENABLED
 void TIMER_Register(int ch, unsigned int clock, int hz)
 {
 	TIMER_Init(ch, clock, hz);
 	SysTime_Register(&SysTick_Op);
 }
+#endif
+
 #endif

@@ -64,16 +64,19 @@ int SysTick_Init(unsigned int clock, int hz)
 	return 0;
 }
 
-static SysTime_Op SysTick_Op = {
+static SysTime_Op SysTick_Op __attribute__((unused)) = {
 	.Delay = SysTick_Delay,
 	.GetTickUS = SysTick_GetTickUS,
 };
 
+#ifdef SYSTEM_TIME_ENABLED
 void SysTick_Register(unsigned int clock, int hz)
 {
 	SysTick_Init(clock, hz);
 	SysTime_Register(&SysTick_Op);
 }
+#endif
+
 #else
 #include <rtos.h>
 
@@ -87,15 +90,18 @@ static uint64_t rtos_GetTickUS(void)
 	return (uint64_t)(xTaskGetTickCount() * 1000);
 }
 
-static SysTime_Op SysTick_Op = {
+static SysTime_Op SysTick_Op __attribute__((unused)) = {
 	.Delay = rtos_Delay,
 	.GetTickUS = rtos_GetTickUS,
 };
 
+#ifdef SYSTEM_TIME_ENABLED
 void SysTick_Register(unsigned int clock, int hz)
 {
 	SysTick_Config(clock/(uint32_t)hz);
 	SysTime_Register(&SysTick_Op);
 }
+#endif
+
 #endif /* RTOS_ENABLED */
 #endif /* SYSTICK_ENABLED */
