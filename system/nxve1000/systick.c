@@ -3,9 +3,11 @@
 #include <config.h>
 #include <init.h>
 
-#ifdef SYSTICK_ENABLED
 #define SYSTICK_MAX_COUNT	((1 << 24) - 1)
 
+#ifdef SYSTICK_ENABLED
+
+#ifndef RTOS_ENABLED
 static struct __attribute__((__packed__)) _SYSTICK_ {
 	uint64_t timestamp;
 	uint32_t lastdec;
@@ -18,16 +20,6 @@ static struct __attribute__((__packed__)) _SYSTICK_ {
 
 static uint64_t SysTick_GetTickUS(void)
 {
-#if (SYSTICK_IRQ_MODE)
-	uint64_t time;
-	uint32_t tick;
-
-	tick = SysTick->VAL;
-	__ISB();
-	time = _systick.timestamp;
-
-	return time + (uint64_t)(tick / _systick.ratio);
-#else
 	uint64_t time = _systick.timestamp;
 	uint32_t lastdec = _systick.lastdec;
 	uint32_t now = SYSTICK_MAX_COUNT - SysTick->VAL;
@@ -41,36 +33,15 @@ static uint64_t SysTick_GetTickUS(void)
 	_systick.timestamp = time;
 
 	return _systick.timestamp / _systick.ratio;
-#endif
 }
 
 static void SysTick_Delay(int ms)
 {
-#if (SYSTICK_IRQ_MODE)
-	uint64_t start = SysTick_GetTick();
-	uint64_t wait = (uint64_t)ms * 1000;
-
-	while (1) {
-		uint64_t curr = SysTick_GetTick();
-
-		if (curr < start)
-			continue;
-
-		if ((curr - start) >= (uint64_t)wait)
-			break;
-	};
-#else
 	uint64_t end = SysTick_GetTickUS() + (uint64_t)ms * 1000;
 
 	while (SysTick_GetTickUS() < end) {
 			;
 	};
-#endif
-}
-
-void SysTick_Handler(void)
-{
-	_systick.timestamp += _systick.hz;
 }
 
 int SysTick_Init(unsigned int clock, int hz)
@@ -87,13 +58,8 @@ int SysTick_Init(unsigned int clock, int hz)
 	NVIC_SetPriority (SysTick_IRQn, (1UL << __NVIC_PRIO_BITS) - 1UL);
 
 	SysTick->VAL = 0UL;
-#if SYSTICK_IRQ_MODE
-	SysTick->LOAD = (uint32_t)(ticksec - 1UL);
-	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
-#else
 	SysTick->LOAD = (uint32_t)(SYSTICK_MAX_COUNT);
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk;
-#endif
 
 	return 0;
 }
@@ -108,4 +74,28 @@ void SysTick_Register(unsigned int clock, int hz)
 	SysTick_Init(clock, hz);
 	SysTime_Register(&SysTick_Op);
 }
-#endif
+#else
+#include <rtos.h>
+
+static void rtos_Delay(int ms)
+{
+	vTaskDelay((TickType_t)ms);
+}
+
+static uint64_t rtos_GetTickUS(void)
+{
+	return (uint64_t)(xTaskGetTickCount() * 1000);
+}
+
+static SysTime_Op SysTick_Op = {
+	.Delay = rtos_Delay,
+	.GetTickUS = rtos_GetTickUS,
+};
+
+void SysTick_Register(unsigned int clock, int hz)
+{
+	SysTick_Config(clock/(uint32_t)hz);
+	SysTime_Register(&SysTick_Op);
+}
+#endif /* RTOS_ENABLED */
+#endif /* SYSTICK_ENABLED */
