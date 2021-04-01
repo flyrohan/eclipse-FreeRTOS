@@ -55,7 +55,7 @@ static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
     *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
 /*-----------------------------------------------------------*/
-
+#ifndef CMSIS_ENABLED
 void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
     ( void ) pcTaskName;
@@ -67,7 +67,19 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
     taskDISABLE_INTERRUPTS();
     for( ;; );
 }
+#endif
 /*-----------------------------------------------------------*/
+
+static void rtos_TimerInit(void)
+{
+#ifdef SYSTEM_TIME_ENABLED
+#if defined(SYSTICK_ENABLED)
+	SysTick_Register(SYSTEM_CLOCK, SYSTEM_TICK_HZ);
+#elif defined(TIMER_ENABLED)
+	TIMER_Register(0, SYSTEM_CLOCK, SYSTEM_TICK_HZ);
+#endif
+#endif
+}
 
 /* Replace Cortex-M0 timer interrupt enable function.
  * vPortSetupTimerInterrupt is defined at port.c with 'weak'
@@ -77,22 +89,19 @@ extern void vPortSetupTimerInterrupt(void);
 
 void vPortSetupTimerInterrupt(void)
 {
-#ifdef SYSTEM_TIME_ENABLED
-	SysTick->CTRL  &= ~(SysTick_CTRL_ENABLE_Msk); /* Disable SysTick IRQ and SysTick Timer */
-
-#if defined(SYSTICK_ENABLED)
-	SysTick_Register(SYSTEM_CLOCK, SYSTEM_TICK_HZ);
-#elif defined(TIMER_ENABLED)
-	TIMER_Register(0, SYSTEM_CLOCK, SYSTEM_TICK_HZ);
-#endif
-#endif
+	rtos_TimerInit();
 }
 
 #include <rtos.h>
 
 void __attribute__((weak)) HAL_RunRTOS(void)
 {
+#ifdef CMSIS_ENABLED
+	osKernelInitialize();
+	osKernelStart();
+#else
 	vTaskStartScheduler();
+#endif
 }
 
 #endif /* RTOS_ENABLED */

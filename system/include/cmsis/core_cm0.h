@@ -101,6 +101,7 @@
   #define __ASM            __asm                                      /*!< asm keyword for GNU Compiler */
   #define __INLINE         inline                                     /*!< inline keyword for GNU Compiler */
   #define __STATIC_INLINE  static inline
+  #define __WEAK		   __attribute__((weak))
 
 #elif defined ( __ICCARM__ )
   #define __ASM            __asm                                      /*!< asm keyword for IAR Compiler */

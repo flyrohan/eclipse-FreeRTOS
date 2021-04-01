@@ -1,8 +1,12 @@
 #ifndef _RTOS_H_
 #define _RTOS_H_
 
+#include <config.h>
 #include <freertos_implement.h>
 
+#ifdef CMSIS_ENABLED
+#include <cmsis_os.h>
+#else
 typedef enum  {
   osPriorityIdle          = -3,          ///< priority: idle (lowest)
   osPriorityLow           = -2,          ///< priority: low
@@ -13,6 +17,7 @@ typedef enum  {
   osPriorityRealtime      = +3,          ///< priority: realtime (highest)
   osPriorityError         =  0x84        ///< system cannot determine priority or thread has illegal priority
 } osPriority;
+#endif
 
 void HAL_RunRTOS(void);
 
