@@ -21,6 +21,56 @@ static struct loop_t {
 	.count = 10,
 };
 
+#ifdef CMSIS_ENABLED
+static osThreadId Loop_Handle = NULL;
+
+static void Loop_Thread(void const *argument)
+{
+	struct loop_t *lt = (struct loop_t *)argument;
+	osThreadId id = Loop_Handle;
+	int count = 1;
+
+	do {
+		Printf("[%d] %d (%d ms), %d\r\n",
+				osThreadGetId(), osKernelGetTickCount(), lt->ms, count);
+		if (lt->ms)
+			osDelay((uint32_t)lt->ms);
+	} while (count++ < _loop_t.count);
+
+	Loop_Handle = NULL;
+	osThreadTerminate(id);
+}
+
+CMD_TYPE int do_loop(int argc, char * const argv[])
+{
+	if (argc > 1 && argv[1]) {
+		if (!strcmp(argv[1], "exit")) {
+			if (Loop_Handle)
+				osThreadTerminate(Loop_Handle);
+			Loop_Handle = NULL;
+			return 0;
+		}
+		_loop_t.ms = strtol(argv[1], NULL, 10);
+	}
+
+	if (argc > 2 && argv[2])
+		_loop_t.count = (int)strtol(argv[2], NULL, 10);
+
+	Printf("loop delay: %d ms, count %d (0x%x)\n", _loop_t.ms, _loop_t.count, Loop_Handle);
+
+	if (Loop_Handle)
+		osThreadTerminate(Loop_Handle);
+
+	osThreadDef(Loop_Thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE);
+	osThreadDef_t *thread_def = (osThreadDef_t *)osThread(Loop_Thread);
+	thread_def->attr.name = "Loop-Task";
+
+	Loop_Handle = osThreadCreate(osThread(Loop_Thread), (void *)&_loop_t);
+
+	return 0;
+}
+#else
+
 static TaskHandle_t Loop_Handle = NULL;
 
 static void Loop_Thread(void *argument)
@@ -66,6 +116,7 @@ CMD_TYPE int do_loop(int argc, char * const argv[])
 					(UBaseType_t)osPriorityLow,
 					&Loop_Handle);
 }
+#endif /* CMSIS_ENABLED */
 
 #else
 
