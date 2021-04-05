@@ -70,12 +70,18 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 #endif
 /*-----------------------------------------------------------*/
 
+#if defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == SYSTEM_TIME_TIMER)
+void Timer_IRQHandler (void)
+{
+	xPortSysTickHandler();
+}
+#endif
+
 static void rtos_TimerInit(void)
 {
-
-#if defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == SYSTICK)
+#if defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == SYSTEM_TIME_SYSTICK)
 	SysTick_Register(SYSTEM_CLOCK, SYSTEM_TICK_HZ);
-#elif defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == TIMER)
+#elif defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == SYSTEM_TIME_TIMER)
 	TIMER_Register(0, SYSTEM_CLOCK, SYSTEM_TICK_HZ);
 #endif
 }

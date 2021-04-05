@@ -3,5 +3,6 @@
 
 int  TIMER_Init(int ch, unsigned int clock, int hz);
 void TIMER_Register(int ch, unsigned int clock, int hz);
+void Timer_IRQHandler(void);
 
 #endif

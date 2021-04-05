@@ -68,12 +68,12 @@ void __attribute__((weak)) HAL_SystemInit(void)
 	UART_ConsoleRegister(UART_CHANNEL, SYSTEM_CLOCK);
 #endif
 
-#if defined(SYSTEM_TIME_ENABLED) && !defined(RTOS_ENABLED)
-	#if defined(SYSTICK_ENABLED)
+#ifndef RTOS_ENABLED
+#if defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == SYSTEM_TIME_SYSTICK)
 	SysTick_Register(SYSTEM_CLOCK, SYSTEM_TICK_HZ);
-	#elif defined(TIMER_ENABLED)
+#elif defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == SYSTEM_TIME_TIMER)
 	TIMER_Register(0, SYSTEM_CLOCK, SYSTEM_TICK_HZ);
-	#endif
+#endif
 #endif
 }
 

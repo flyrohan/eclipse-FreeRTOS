@@ -82,10 +82,14 @@ static SysTime_Op SysTick_Op __attribute__((unused)) = {
 #else
 #include <rtos.h>
 
+void __attribute__((weak)) Timer_IRQHandler (void) { }
+
 void Timer_Handler(void)
 {
 	writel(TINT_STATUS | TINT_ENABLE, &_timer.base->TINT_CSTAT);
-	xPortSysTickHandler();
+
+	/* Call xPortSysTickHandler in FreeRTOS */
+	Timer_IRQHandler();
 }
 
 static void rtos_Delay(int ms)
@@ -159,12 +163,10 @@ int TIMER_Init(int ch, unsigned int clock, int hz __attribute__((unused)))
 	return 0;
 }
 
-#ifdef SYSTEM_TIME_ENABLED
 void TIMER_Register(int ch, unsigned int clock, int hz)
 {
 	TIMER_Init(ch, clock, hz);
 	SysTime_Register(&SysTick_Op);
 }
-#endif
 
 #endif
