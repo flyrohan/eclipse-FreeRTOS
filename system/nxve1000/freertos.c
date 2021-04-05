@@ -72,12 +72,11 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 
 static void rtos_TimerInit(void)
 {
-#ifdef SYSTEM_TIME_ENABLED
-#if defined(SYSTICK_ENABLED)
+
+#if defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == SYSTICK)
 	SysTick_Register(SYSTEM_CLOCK, SYSTEM_TICK_HZ);
-#elif defined(TIMER_ENABLED)
+#elif defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == TIMER)
 	TIMER_Register(0, SYSTEM_CLOCK, SYSTEM_TICK_HZ);
-#endif
 #endif
 }
 

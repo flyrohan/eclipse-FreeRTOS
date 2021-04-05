@@ -95,13 +95,11 @@ static SysTime_Op SysTick_Op __attribute__((unused)) = {
 	.GetTickUS = rtos_GetTickUS,
 };
 
-#ifdef SYSTEM_TIME_ENABLED
 void SysTick_Register(unsigned int clock, int hz)
 {
 	SysTick_Config(clock/(uint32_t)hz);
 	SysTime_Register(&SysTick_Op);
 }
-#endif
 
 #endif /* RTOS_ENABLED */
 #endif /* SYSTICK_ENABLED */

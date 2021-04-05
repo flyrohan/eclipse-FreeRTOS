@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <cmsis_device.h>
 #include <timer.h>
-#include <time.h>
+#include <systime.h>
 #include <io.h>
 #include <config.h>
 #include <ExceptionHandlers.h>
@@ -127,7 +127,7 @@ static void TIMER_Stop(void)
 	writel(_mask(_timer.base->TCON, TCON_START), &_timer.base->TCON);
 }
 
-int TIMER_Init(int ch, unsigned int clock, int hz  __attribute__((unused)))
+int TIMER_Init(int ch, unsigned int clock, int hz __attribute__((unused)))
 {
 	unsigned int count;
 	bool irqenb;
