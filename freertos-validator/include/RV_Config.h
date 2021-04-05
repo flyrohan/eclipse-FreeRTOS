@@ -7,7 +7,7 @@
 #ifndef __RV_CONFIG_H
 #define __RV_CONFIG_H
 
-#include "ARMCM3.h"
+#include "RTE_Components.h"
 
 //-------- <<< Use Configuration Wizard in Context Menu >>> --------------------
 
