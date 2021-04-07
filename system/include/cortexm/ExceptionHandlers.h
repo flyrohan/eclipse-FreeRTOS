@@ -55,7 +55,31 @@ extern "C"
   SysTick_Handler (void);
 
   extern void
-  Timer_Handler (void);
+  Timer_Handler (int irq);
+
+  extern void
+  Timer0_Handler (void);
+
+  extern void
+  Timer1_Handler (void);
+
+  extern void
+  Timer2_Handler (void);
+
+  extern void
+  Timer3_Handler (void);
+
+  extern void
+  Timer4_Handler (void);
+
+  extern void
+  Timer5_Handler (void);
+
+  extern void
+  Timer6_Handler (void);
+
+  extern void
+  Timer7_Handler (void);
 
   // Exception Stack Frame of the Cortex-M3 or Cortex-M4 processor.
   typedef struct

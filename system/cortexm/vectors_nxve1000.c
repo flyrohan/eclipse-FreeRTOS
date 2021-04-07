@@ -104,9 +104,16 @@ pHandler __isr_vectors[] =
 		DeviceInterrupt_Handler,	// (10)
 		DeviceInterrupt_Handler,	// (11)
 		DeviceInterrupt_Handler,	// (12)
-		DeviceInterrupt_Handler,	// (14)
-		Timer_Handler,                          	// Timer handler
-        DeviceInterrupt_Handler,					// Device specific
+		DeviceInterrupt_Handler,	// (13)
+		Timer0_Handler,             // Timer0 handler (14)
+		Timer1_Handler,             // Timer1 handler (15)
+		Timer2_Handler,             // Timer2 handler (16)
+		Timer3_Handler,             // Timer3 handler (17)
+		Timer4_Handler,             // Timer4 handler (18)
+		Timer5_Handler,             // Timer5 handler (19)
+		Timer6_Handler,             // Timer6 handler (20)
+		Timer7_Handler,             // Timer7 handler (21)
+        DeviceInterrupt_Handler,	// Device specific
     // TODO: rename and add more vectors here
     };
 
@@ -125,9 +132,32 @@ Default_Handler(void)
 // ----------------------------------------------------------------------------
 
 void __attribute__ ((section(".after_vectors"),weak))
-Timer_Handler(void)
+Timer_Handler(int irq __attribute__((unused)))
 {
 	// DO NOT loop, just return.
 	// Useful in case someone (like STM HAL) inadvertently enables SysTick.
 }
 
+void __attribute__ ((section(".after_vectors"),weak))
+Timer0_Handler(void) { Timer_Handler(0); }
+
+void __attribute__ ((section(".after_vectors"),weak))
+Timer1_Handler(void) { Timer_Handler(1); }
+
+void __attribute__ ((section(".after_vectors"),weak))
+Timer2_Handler(void) { Timer_Handler(2); }
+
+void __attribute__ ((section(".after_vectors"),weak))
+Timer3_Handler(void) { Timer_Handler(3); }
+
+void __attribute__ ((section(".after_vectors"),weak))
+Timer4_Handler(void) { Timer_Handler(4); }
+
+void __attribute__ ((section(".after_vectors"),weak))
+Timer5_Handler(void) { Timer_Handler(5); }
+
+void __attribute__ ((section(".after_vectors"),weak))
+Timer6_Handler(void) { Timer_Handler(6); }
+
+void __attribute__ ((section(".after_vectors"),weak))
+Timer7_Handler(void) { Timer_Handler(7); }

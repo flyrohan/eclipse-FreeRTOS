@@ -3,8 +3,6 @@
 #ifdef RTOS_ENABLED
 
 #include <freertos_implement.h>
-#include "FreeRTOS.h"
-#include "task.h"
 
 /* configUSE_STATIC_ALLOCATION is set to 1, so the application must provide an
 implementation of vApplicationGetIdleTaskMemory() to provide the memory that is
@@ -69,20 +67,13 @@ void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 }
 #endif
 /*-----------------------------------------------------------*/
-
-#if defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == SYSTEM_TIME_TIMER)
-void Timer_IRQHandler (void)
-{
-	xPortSysTickHandler();
-}
-#endif
-
 static void rtos_TimerInit(void)
 {
 #if defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == SYSTEM_TIME_SYSTICK)
 	SysTick_Register(SYSTEM_CLOCK, SYSTEM_TICK_HZ);
 #elif defined(SYSTEM_TIME_MODULE) && (SYSTEM_TIME_MODULE == SYSTEM_TIME_TIMER)
-	TIMER_Register(0, SYSTEM_CLOCK, SYSTEM_TICK_HZ);
+	TIMER_Register(TIMER_CH, SYSTEM_CLOCK, SYSTEM_TICK_HZ);
+	TIMER_ISR_Register(TIMER_CH, (ISR_Handler)xPortSysTickHandler, NULL);
 #endif
 }
 
