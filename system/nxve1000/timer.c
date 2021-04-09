@@ -11,7 +11,9 @@
 #ifdef TIMER_ENABLED
 
 #define TIMER_CHS				8
+#ifndef TIMER_CLOCK_HZ
 #define TIMER_CLOCK_HZ			1000000			/* 1Mhz */
+#endif
 #define	TIMER_MAX_COUNT			-(1UL)
 #define TIMER_MUX_SEL			0 				/* bypass */
 
@@ -139,7 +141,7 @@ static void TIMER_Stop(int ch)
 	writel(_mask(timer->base->TCON, TCON_START), &timer->base->TCON);
 }
 
-int TIMER_Init(int ch, unsigned int clock, int hz __attribute__((unused)))
+int TIMER_Init(int ch, unsigned int infreq, unsigned int tfreq, int hz __attribute__((unused)))
 {
 	struct TIMER_t *timer = &timer_t[ch];
 	unsigned int count;
@@ -152,17 +154,20 @@ int TIMER_Init(int ch, unsigned int clock, int hz __attribute__((unused)))
 	timer->base = (void *)(TIMER_PHY_BASE + (TIMER_CH_OFFSET * ch));
 	timer->irqno = TIMER0_IRQn + ch;
 
+	if (!tfreq)
+		tfreq = TIMER_CLOCK_HZ;
+
 #ifdef RTOS_ENABLED
 	irqenb = true;
-	count = (unsigned int)hz;
-	scale = (int)clock / TIMER_CLOCK_HZ;
+	count = tfreq / (unsigned  int)hz;
+	scale = (int)(infreq / tfreq);
 
 	NVIC_SetPriority(timer->irqno, 0);
 	NVIC_EnableIRQ(timer->irqno);
 #else
 	irqenb = false;
 	count = TIMER_MAX_COUNT;
-	scale = (int)clock / TIMER_CLOCK_HZ;
+	scale = (int)infreq / tfreq;
 #endif
 
 	TIMER_Stop(ch);
@@ -172,12 +177,12 @@ int TIMER_Init(int ch, unsigned int clock, int hz __attribute__((unused)))
 	return 0;
 }
 
-void TIMER_Register(int ch, unsigned int clock, int hz)
+void TIMER_Register(int ch, unsigned int infreq, unsigned int tfreq, int hz)
 {
 	if (ch < 0 || ch > TIMER_CHS)
 		return;
 
-	TIMER_Init(ch, clock, hz);
+	TIMER_Init(ch, infreq, tfreq, hz);
 
 	systimer = &timer_t[ch];
 
