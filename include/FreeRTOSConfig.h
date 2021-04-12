@@ -222,7 +222,15 @@ void xPortSysTickHandler(void);
 // goto WFI on IDLE status
 #define configUSE_TICKLESS_IDLE					1
 
-/* portMISSED_COUNTS_FACTOR for the timer */
+/* If configTASK_RETURN_ADDRESS is not defined then a task that attempts to
+return from its implementing function will end up in a "task exit error"
+function - which contains a call to configASSERT().  However this can give GCC
+some problems when it tries to unwind the stack, as the exit error function has
+nothing to return to.  To avoid this define configTASK_RETURN_ADDRESS to 0.  */
+void prvTaskExitErrorHook(void);
+#define configTASK_RETURN_ADDRESS				prvTaskExitErrorHook
+
+/* portMISSED_COUNTS_FACTOR */
 #define configMISSED_COUNTS_FACTOR				15000
 
 //------------- <<< end of configuration section >>> ---------------------------

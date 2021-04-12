@@ -508,6 +508,11 @@ void vPortSetupTimerInterrupt(void)
 {
 	rtos_TimerInit();
 }
+/*-----------------------------------------------------------*/
+void prvTaskExitErrorHook(void)
+{
+	vTaskDelete(NULL);
+}
 
 /*-----------------------------------------------------------*/
 #include <rtos.h>

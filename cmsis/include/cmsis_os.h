@@ -436,15 +436,15 @@ uint32_t osKernelSysTick (void);
 #define osThreadDef(name, priority, instances, stacksz) \
 extern const osThreadDef_t os_thread_def_##name
 #else                            // define the object
+#define OS_STKSIZE	configMINIMAL_STACK_SIZE
 #define osThreadDef(name, priority, instances, stacksz) \
-static StaticTask_t os_thread_cb_##name; \
 const osThreadDef_t os_thread_def_##name = \
 { (name), \
   { NULL, osThreadDetached, \
-    (instances == 1) ? (&os_thread_cb_##name) : NULL,\
-    (instances == 1) ? sizeof(StaticTask_t) : 0U, \
+    NULL,\
+    0U, \
     NULL, \
-    8*((stacksz+7)/8)  * sizeof(StackType_t), \
+    ((stacksz) ? (stacksz) : OS_STKSIZE) * sizeof(StackType_t), \
     (priority), 0U, 0U } }
 #endif
  
