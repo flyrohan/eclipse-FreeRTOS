@@ -28,16 +28,16 @@ void DEF_IRQHandler (void) {
  *      Init test suite
  *----------------------------------------------------------------------------*/
 static void TS_Init (void) {  
-#ifdef RTE_RV_MEMORYPOOL
+#ifdef CMSIS_RV_MEMORYPOOL
   CreateMemoryPool();
 #endif 
-#ifdef RTE_RV_MSGQUEUE
+#ifdef CMSIS_RV_MSGQUEUE
   CreateMessageQueue();
 #endif 
-#ifdef RTE_RV_MAILQUEUE
+#ifdef CMSIS_RV_MAILQUEUE
   CreateMailQueue();
 #endif 
-#ifdef RTE_RV_WAITFUNC
+#ifdef CMSIS_RV_WAITFUNC
   StartCortexCycleCounter();
 #endif 
 }
@@ -46,7 +46,7 @@ static void TS_Init (void) {
  *      Test cases list
  *----------------------------------------------------------------------------*/
 static TEST_CASE TC_LIST[] = {
-#ifdef RTE_RV_THREAD 
+#ifdef CMSIS_RV_THREAD
   TCD ( TC_ThreadCreate,                         1      ),
   TCD ( TC_ThreadMultiInstance,                  1      ),
   TCD ( TC_ThreadTerminate,                      1      ),
@@ -59,17 +59,17 @@ static TEST_CASE TC_LIST[] = {
   TCD ( TC_ThreadParam,                          1      ),
   TCD ( TC_ThreadInterrupts,                     1      ),
 #endif                                        
-#ifdef RTE_RV_GENWAIT                         
+#ifdef CMSIS_RV_GENWAIT
   TCD ( TC_GenWaitBasic,                         1      ),
   TCD ( TC_GenWaitInterrupts,                    1      ),
 #endif                                        
-#ifdef RTE_RV_TIMER                           
+#ifdef CMSIS_RV_TIMER
   TCD ( TC_TimerOneShot,                         1      ),
   TCD ( TC_TimerPeriodic,                        1      ),
   TCD ( TC_TimerParam,                           1      ),
   TCD ( TC_TimerInterrupts,                      1      ),
 #endif                                        
-#ifdef RTE_RV_SIGNAL                          
+#ifdef CMSIS_RV_SIGNAL
   TCD ( TC_SignalMainThread,                     1      ),
   TCD ( TC_SignalChildThread,                    1      ),
   TCD ( TC_SignalChildToParent,                  1      ),
@@ -78,7 +78,7 @@ static TEST_CASE TC_LIST[] = {
   TCD ( TC_SignalParam,                          1      ),
   TCD ( TC_SignalInterrupts,                     1      ),
 #endif                                        
-#ifdef RTE_RV_SEMAPHORE                       
+#ifdef CMSIS_RV_SEMAPHORE
   TCD ( TC_SemaphoreCreateAndDelete,             1      ),
   TCD ( TC_SemaphoreObtainCounting,              1      ),
   TCD ( TC_SemaphoreObtainBinary,                1      ),
@@ -89,7 +89,7 @@ static TEST_CASE TC_LIST[] = {
   TCD ( TC_SemParam,                             1      ),        
   TCD ( TC_SemInterrupts,                        1      ),   
 #endif  
-#ifdef RTE_RV_MUTEX                                                                       
+#ifdef CMSIS_RV_MUTEX
   TCD ( TC_MutexBasic,                           1      ),
   TCD ( TC_MutexTimeout,                         1      ),
   TCD ( TC_MutexNestedAcquire,                   1      ),
@@ -98,14 +98,14 @@ static TEST_CASE TC_LIST[] = {
   TCD ( TC_MutexParam,                           1      ),
   TCD ( TC_MutexInterrupts,                      1      ),                                           
 #endif  
-#ifdef RTE_RV_MEMORYPOOL
+#ifdef CMSIS_RV_MEMORYPOOL
   TCD ( TC_MemPoolAllocAndFree,                  1      ),   
   TCD ( TC_MemPoolAllocAndFreeComb,              1      ),   
   TCD ( TC_MemPoolZeroInit,                      1      ),   
   TCD ( TC_MemPoolParam,                         1      ),   
   TCD ( TC_MemPoolInterrupts,                    1      ),   
 #endif  
-#ifdef RTE_RV_MSGQUEUE
+#ifdef CMSIS_RV_MSGQUEUE
   TCD ( TC_MsgQBasic,                            1      ),  
   TCD ( TC_MsgQWait,                             1      ),  
   TCD ( TC_MsgQParam,                            1      ),  
@@ -113,7 +113,7 @@ static TEST_CASE TC_LIST[] = {
   TCD ( TC_MsgFromThreadToISR,                   1      ),  
   TCD ( TC_MsgFromISRToThread,                   1      ),  
 #endif 
-#ifdef RTE_RV_MAILQUEUE
+#ifdef CMSIS_RV_MAILQUEUE
   TCD ( TC_MailAlloc,                            1      ),
   TCD ( TC_MailCAlloc,                           1      ),
   TCD ( TC_MailToThread,                         1      ),
@@ -125,7 +125,7 @@ static TEST_CASE TC_LIST[] = {
   TCD ( TC_MailFromISRToThread,                  1      ),
 #endif 
 #if !defined(__APPLE__) && !defined(__linux__) && !defined(USE_FREERTOS)
-#ifdef RTE_RV_WAITFUNC
+#ifdef CMSIS_RV_WAITFUNC
   TCD ( TC_MeasureOsDelayTicks,                  1      ),
   TCD ( TC_MeasureOsWaitTicks,                   1      ),
   TCD ( TC_MeasureOsSignalWaitTicks,             1      ),
