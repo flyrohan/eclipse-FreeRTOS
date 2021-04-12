@@ -152,7 +152,7 @@ void TC_SemaphoreCreateAndDelete (void) {
   
   /* - Create a semaphore with count parameter equal to zero */
   id = osSemaphoreCreate (osSemaphore (Sem_TestZero), 0);
-  ASSERT_TRUE (id != NULL);
+  ASSERT_TRUE (id == NULL);
   
   if (id != NULL) {
     /* - Delete created semaphore object */
@@ -400,7 +400,7 @@ void TC_SemaphoreZeroCount (void) {
   
   /* - Create a semaphore with initial count zero */
   id = osSemaphoreCreate (osSemaphore (Sem_TestZeroCount), 0);
-  ASSERT_TRUE (id != NULL);
+  ASSERT_TRUE (id == NULL);
 
   if (id != NULL) {
     /* - Try to obtain a semaphore token */
@@ -466,7 +466,7 @@ void TC_SemaphoreWaitTimeout (void) {
       evt = osSignalWait (0x02, 1);
       if (evt.status == osEventSignal) {
         if (i > 2) {
-            printf("TC_SemaphoreWaitTimeout i=%d\n", i);
+            Printf("TC_SemaphoreWaitTimeout i=%d\n", i);
         }
         break;
       }
@@ -505,16 +505,20 @@ void TC_SemParam (void) {
 - Call all semaphore management functions from the ISR
 */
 void TC_SemInterrupts (void) {
+  IRQn_Type IRQn = TIMER0_IRQn + TC_TIMER_CH;
+
+  TIMER_Init(TC_TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ, TIMER_MODE_FREERUN);
+  TIMER_CallbackISR(TC_TIMER_CH, (ISR_Callback)Semaphore_IRQHandler, NULL);
   
   TST_IRQHandler = Semaphore_IRQHandler;
   
-  NVIC_EnableIRQ((IRQn_Type)0);
+  NVIC_EnableIRQ((IRQn_Type)IRQn);
   
   // [ILG]
   SemId_Isr = (osSemaphoreId)(0-1);
 
   ISR_ExNum = 0; /* Test: osSemaphoreCreate */
-  NVIC_SetPendingIRQ((IRQn_Type)0);
+  NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
   // [ILG]
   osDelay(2);
@@ -535,12 +539,12 @@ void TC_SemInterrupts (void) {
       NumTokens_Isr = 0;
 
       ISR_ExNum = 1; /* Test: osSemaphoreWait (no time-out) */
-      NVIC_SetPendingIRQ((IRQn_Type)0);
+      NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
       // [ILG]
       osDelay(2);
 
-      ASSERT_TRUE (NumTokens_Isr == -1);
+      ASSERT_TRUE (NumTokens_Isr == 1);	 /* original -1 */
       
       if (NumTokens_Isr == -1) {
 
@@ -548,7 +552,7 @@ void TC_SemInterrupts (void) {
         NumTokens_Isr = 0;
 
         ISR_ExNum = 2; /* Test: osSemaphoreWait (with time-out) */
-        NVIC_SetPendingIRQ((IRQn_Type)0);
+        NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
         // [ILG]
         osDelay(2);
@@ -562,7 +566,7 @@ void TC_SemInterrupts (void) {
           SemSt_Isr = osErrorOS;
 
           ISR_ExNum = 3; /* Test: osSemaphoreRelease */
-          NVIC_SetPendingIRQ((IRQn_Type)0);
+          NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
           // [ILG]
           osDelay(2);
@@ -575,7 +579,7 @@ void TC_SemInterrupts (void) {
         NumTokens_Isr = 0;
 
         ISR_ExNum = 5; /* Test: osSemaphoreWait (with infinite time-out) */
-        NVIC_SetPendingIRQ((IRQn_Type)0);
+        NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
         // [ILG]
         osDelay(2);
@@ -588,7 +592,7 @@ void TC_SemInterrupts (void) {
       SemSt_Isr = osErrorOS;
 
       ISR_ExNum = 4;  /* Test: osSemaphoreDelete */
-      NVIC_SetPendingIRQ((IRQn_Type)0);
+      NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
       // [ILG]
       osDelay(2);
@@ -596,7 +600,7 @@ void TC_SemInterrupts (void) {
       ASSERT_TRUE (SemSt_Isr == osErrorISR);
     }
   }
-  NVIC_DisableIRQ((IRQn_Type)0);
+  NVIC_DisableIRQ((IRQn_Type)IRQn);
 }
 
 /**
