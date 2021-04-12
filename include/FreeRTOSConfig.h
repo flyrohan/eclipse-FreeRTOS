@@ -54,7 +54,7 @@ void xPortSysTickHandler(void);
 //  <o>Minimal stack size [words] <0-65535>
 //  <i> Stack for idle task and default task stack in words.
 //  <i> Default: 128
-#define configMINIMAL_STACK_SIZE                ((uint16_t)(128))
+#define configMINIMAL_STACK_SIZE                ((uint16_t)(64))
 
 //  <o>Total heap size [bytes] <0-0xFFFFFFFF>
 //  <i> Heap memory size in bytes.
@@ -221,6 +221,9 @@ void xPortSysTickHandler(void);
 
 // goto WFI on IDLE status
 #define configUSE_TICKLESS_IDLE					1
+
+/* portMISSED_COUNTS_FACTOR for the timer */
+#define configMISSED_COUNTS_FACTOR				15000
 
 //------------- <<< end of configuration section >>> ---------------------------
 

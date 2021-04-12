@@ -85,7 +85,6 @@ static uint32_t ulStoppedTimerCompensation = 0;
 
 #define portMAX_24_BIT_NUMBER		( 0xffffffUL )
 #define portMAX_32_BIT_NUMBER		( 0xffffffffUL )
-#define portMISSED_COUNTS_FACTOR    ( 22UL )
 
 extern void vPortSuppressTicksAndSleep(TickType_t xExpectedIdleTime);
 #endif
@@ -100,6 +99,7 @@ extern void vPortSuppressTicksAndSleep(TickType_t xExpectedIdleTime);
 #define portNVIC_SYSTICK_INT_BIT              ( 1UL << 1UL )
 #define portNVIC_SYSTICK_ENABLE_BIT           ( 1UL << 0UL )
 #define portNVIC_SYSTICK_COUNT_FLAG_BIT       ( 1UL << 16UL )
+#define portMISSED_COUNTS_FACTOR    		  ( 22UL )
 
 void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
 {
@@ -301,11 +301,13 @@ static void rtos_TimerInit(void)
 #define TIMER_TCON_MANUALUPDATE   	( 1UL << 1UL )
 #define TIMER_TINTS_PEND_BIT		( 1UL << 5UL )	/* TINT_CSTAT */
 
+#define portMISSED_COUNTS_FACTOR    configMISSED_COUNTS_FACTOR
+
 void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
 {
 	uint32_t ulReloadValue, ulCompleteTickPeriods, ulCompletedSysTickDecrements;
     TickType_t xModifiableIdleTime;
-    uint32_t uInterruptPended;
+    uint32_t uInterruptPended, uCurrentValue;
 
     /* Make sure the SysTick reload value does not overflow the counter. */
     if( xExpectedIdleTime > xMaximumPossibleSuppressedTicks )
@@ -378,6 +380,7 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
 
         configPOST_SLEEP_PROCESSING( xExpectedIdleTime );
 
+        uCurrentValue = __TIMER_CURRENT_VAL;
         uInterruptPended = (__TIMER_TINTS & TIMER_TINTS_PEND_BIT) != 0 ? 1 : 0;
 
         /* Re-enable interrupts to allow the interrupt that brought the MCU
@@ -412,7 +415,7 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
              * reloaded with ulReloadValue.  Reset the
              * portTIMER_COUNT_REG with whatever remains of this tick
              * period. */
-            ulCalculatedLoadValue = ( ulTimerCountsForOneTick ) - ( ulReloadValue - __TIMER_CURRENT_VAL );
+            ulCalculatedLoadValue = ( ulTimerCountsForOneTick ) - ( ulReloadValue - uCurrentValue );
 
             /* Don't allow a tiny value, or values that have somehow
              * underflowed because the post sleep hook did something
@@ -436,7 +439,7 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
              * Work out how long the sleep lasted rounded to complete tick
              * periods (not the ulReload value which accounted for part
              * ticks). */
-        	ulCompletedSysTickDecrements = ( xExpectedIdleTime * ulTimerCountsForOneTick ) - __TIMER_CURRENT_VAL;
+        	ulCompletedSysTickDecrements = ( xExpectedIdleTime * ulTimerCountsForOneTick ) - uCurrentValue;
 
             /* How many complete tick periods passed while the processor
              * was waiting? */
@@ -466,6 +469,21 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
 }
 #endif /* configUSE_TICKLESS_IDLE */
 
+static uint64_t __SysTime_GetTickUS(void)
+{
+	return (uint64_t)(xTaskGetTickCount() * 1000);
+}
+
+static void __SysTime_Delay(int ms)
+{
+	vTaskDelay((TickType_t)ms);
+}
+
+static SysTime_Op Timer_Op = {
+	.GetTickUS = __SysTime_GetTickUS,
+	.Delay = __SysTime_Delay,
+};
+
 static void rtos_TimerInit(void)
 {
 	#if ( configUSE_TICKLESS_IDLE == 1 )
@@ -474,8 +492,9 @@ static void rtos_TimerInit(void)
     ulStoppedTimerCompensation = portMISSED_COUNTS_FACTOR;
 	#endif /* configUSE_TICKLESS_IDLE */
 
-	TIMER_Register(TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ);
-	TIMER_ISR_Register(TIMER_CH, (ISR_Handler)xPortSysTickHandler, NULL);
+	TIMER_Register(TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ,
+				TIMER_MODE_PERIODIC, &Timer_Op);
+	TIMER_CallbackISR(TIMER_CH, (ISR_Callback)xPortSysTickHandler, NULL);
 }
 #endif
 
