@@ -140,7 +140,7 @@
 #define osFeature_Semaphore   65535U    ///< maximum count for \ref osSemaphoreCreate function
 #define osFeature_Wait        0         ///< osWait function: 1=available, 0=not available
 #define osFeature_SysTick     1         ///< osKernelSysTick functions: 1=available, 0=not available
-#define osFeature_Pool        0         ///< Memory Pools:    1=available, 0=not available
+#define osFeature_Pool        1         ///< Memory Pools:    1=available, 0=not available
 #define osFeature_MessageQ    1         ///< Message Queues:  1=available, 0=not available
 #define osFeature_MailQ       0         ///< Mail Queues:     1=available, 0=not available
  

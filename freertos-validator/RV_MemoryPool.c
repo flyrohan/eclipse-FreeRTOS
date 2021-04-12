@@ -235,7 +235,7 @@ void TC_MemPoolParam (void) {
   
   ASSERT_TRUE (osPoolFree (NULL,       NULL) == osErrorParameter);
   ASSERT_TRUE (osPoolFree (NULL,       &val) == osErrorParameter);
-  ASSERT_TRUE (osPoolFree (MemPool_Id, &val) == osErrorValue);
+  ASSERT_TRUE (osPoolFree (MemPool_Id, &val) == osErrorParameter);
 }
 
 /*=======0=========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1====*/
@@ -245,16 +245,20 @@ void TC_MemPoolParam (void) {
 - Call all memory pool management functions from the ISR
 */
 void TC_MemPoolInterrupts (void) {
+  IRQn_Type IRQn = TIMER0_IRQn + TC_TIMER_CH;
+
+  TIMER_Init(TC_TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ, TIMER_MODE_FREERUN);
+  TIMER_CallbackISR(TC_TIMER_CH, (ISR_Callback)MemoryPool_IRQHandler, NULL);
   
   TST_IRQHandler = MemoryPool_IRQHandler;
   
-  NVIC_EnableIRQ((IRQn_Type)0);
+  NVIC_EnableIRQ((IRQn_Type)IRQn);
   
   // [ILG]
   MemPool_IdIsr = (osPoolId)(0-1);
 
   ISR_ExNum = 0; /* Test: osPoolCreate */
-  NVIC_SetPendingIRQ((IRQn_Type)0);
+  NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
   // [ILG]
   osDelay(2);
@@ -268,7 +272,7 @@ void TC_MemPoolInterrupts (void) {
     MemPtr_Isr[0] = NULL;
 
     ISR_ExNum = 1;  /* Test: osPoolAlloc */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay(2);
@@ -279,7 +283,7 @@ void TC_MemPoolInterrupts (void) {
     MemPtr_Isr[1] = NULL;
 
     ISR_ExNum = 2;  /* Test: osPoolCAlloc */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay(2);
@@ -290,7 +294,7 @@ void TC_MemPoolInterrupts (void) {
     MemPool_StIsr = osErrorOS;
 
     ISR_ExNum = 3; /* Test: osPoolFree */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay(2);
@@ -301,14 +305,14 @@ void TC_MemPoolInterrupts (void) {
     MemPool_StIsr = osErrorOS;
 
     ISR_ExNum = 4; /* Test: osPoolFree */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay(2);
 
     ASSERT_TRUE (MemPool_StIsr == osOK);
   }
-  NVIC_DisableIRQ((IRQn_Type)0);
+  NVIC_DisableIRQ((IRQn_Type)IRQn);
 }
 
 /**
