@@ -9,7 +9,7 @@
 #include "cmsis_rv.h"
 #include "cmsis_os.h"
 
-#ifdef RTE_RV_MEMORYPOOL
+#ifdef CMSIS_RV_MEMORYPOOL
 /*-----------------------------------------------------------------------------
  *      Test implementation
  *----------------------------------------------------------------------------*/

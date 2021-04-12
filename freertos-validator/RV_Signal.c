@@ -9,7 +9,7 @@
 #include "cmsis_rv.h"
 #include "cmsis_os.h"
 
-#ifdef RTE_RV_SIGNAL
+#ifdef CMSIS_RV_SIGNAL
 /*-----------------------------------------------------------------------------
  *      Test implementation
  *----------------------------------------------------------------------------*/

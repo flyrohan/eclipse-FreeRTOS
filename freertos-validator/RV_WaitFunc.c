@@ -9,7 +9,7 @@
 #include "cmsis_rv.h"
 #include "cmsis_os.h"
 
-#ifdef RTE_RV_WAITFUNC
+#ifdef CMSIS_RV_WAITFUNC
 
 #define osKernelSysTickFrequency	48000000
 /*-----------------------------------------------------------------------------

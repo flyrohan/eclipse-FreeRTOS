@@ -9,7 +9,7 @@
 #include "cmsis_rv.h"
 #include "cmsis_os.h"
 
-#ifdef RTE_RV_MAILQUEUE
+#ifdef CMSIS_RV_MAILQUEUE
 /*-----------------------------------------------------------------------------
  *      Test implementation
  *----------------------------------------------------------------------------*/

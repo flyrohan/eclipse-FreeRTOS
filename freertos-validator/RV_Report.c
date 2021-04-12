@@ -44,8 +44,13 @@ uint32_t    current_result;       /* Current test case result                 */
 #define PRINT(x) trace_printf x
 #define FLUSH()
 #else
+#if 0
 #define PRINT(x) MsgPrint x
 #define FLUSH()  MsgFlush()
+#else
+#define PRINT(x) 	Printf x
+#define FLUSH()		Printf(("\n"));
+#endif
 #endif
 
 static uint8_t Passed[] = "PASSED";

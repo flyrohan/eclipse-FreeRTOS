@@ -9,6 +9,8 @@
 #include "RV_Framework.h"
 #include "RV_Config.h"
 
+#ifdef CMSIS_TEST_VALIDATOR
+
 /*-----------------------------------------------------------------------------
  *      Variables declarations
  *----------------------------------------------------------------------------*/
@@ -146,3 +148,4 @@ TEST_SUITE ts = {
   TC_LIST,
   ARRAY_SIZE (TC_LIST),  
 };  
+#endif /* CMSIS_TEST_VALIDATOR */

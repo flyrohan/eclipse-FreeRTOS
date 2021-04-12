@@ -9,6 +9,9 @@
 // [ILG]
 #include "RV_Report.h"
 
+#include <config.h>
+
+#ifdef CMSIS_TEST_VALIDATOR
 // [ILG]
 // Required to return a non zero value from cmsis_rv()
 extern TEST_REPORT  test_report;
@@ -102,3 +105,12 @@ cmsis_rv (void) {
 @}
 */ 
 // end of group framework_funcs
+#ifdef CMD_ENABLED
+CMD_TYPE int do_cmsis(int argc __attribute__((unused)), char * const argv[] __attribute__((unused)))
+{
+	cmsis_rv();
+	return 0;
+}
+CMD_DEFINE(cmsis, do_cmsis);
+#endif
+#endif /* CMSIS_TEST_VALIDATOR */
