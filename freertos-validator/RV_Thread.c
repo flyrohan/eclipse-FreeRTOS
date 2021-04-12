@@ -341,13 +341,13 @@ void TC_ThreadTerminate (void) {
 
     if (id != NULL) {
       /* Allow counting thread to run */
-      ASSERT_TRUE (osDelay(5) == osEventTimeout);
+      ASSERT_TRUE (osDelay(5) == osOK);
       /* - Terminate test thread and remember counter value */
       ASSERT_TRUE (osThreadTerminate (id) == osOK);
       ASSERT_TRUE (Var_Counter != 0);
       cnt = Var_Counter;
 
-      ASSERT_TRUE (osDelay(5) == osEventTimeout);
+      ASSERT_TRUE (osDelay(5) == osOK);
       /* - Wait and verify that thread is terminated by checking global counter */
       ASSERT_TRUE (cnt == Var_Counter);
     }
@@ -378,7 +378,7 @@ void TC_ThreadRestart (void) {
   
     if (id != NULL) {
       /* Allow counting thread to run */
-      ASSERT_TRUE (osDelay(5) == osEventTimeout);
+      ASSERT_TRUE (osDelay(5) == osOK);
       ASSERT_TRUE (osThreadTerminate (id) == osOK);
 
       if (iter == 1) {
@@ -488,7 +488,7 @@ void TC_ThreadPriority (void) {
     ASSERT_TRUE (osThreadGetPriority (t_idc) == osPriorityRealtime);
     
     /* Setting invalid priority value should fail */
-    ASSERT_TRUE (osThreadSetPriority (t_idc, osPriorityError) == osErrorValue);
+    ASSERT_TRUE (osThreadSetPriority (t_idc, osPriorityError) == osErrorParameter);
   }
 
 
@@ -520,7 +520,7 @@ void TC_ThreadPriority (void) {
     ASSERT_TRUE (osThreadGetPriority (t_idr) == osPriorityRealtime);
 
     /* Setting invalid priority value should fail */
-    ASSERT_TRUE (osThreadSetPriority (t_idr, osPriorityError) == osErrorValue);
+    ASSERT_TRUE (osThreadSetPriority (t_idr, osPriorityError) == osErrorParameter);
     
     /* Terminate the thread */
     ASSERT_TRUE (osThreadTerminate (t_idr) == osOK);
@@ -727,6 +727,10 @@ void TC_ThreadParam (void) {
 - Call all thread management functions from the ISR
 */
 void TC_ThreadInterrupts (void) {
+  IRQn_Type IRQn = TIMER0_IRQn + TC_TIMER_CH;
+
+  TIMER_Init(TC_TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ, TIMER_MODE_FREERUN);
+  TIMER_CallbackISR(TC_TIMER_CH, (ISR_Callback)Thread_IRQHandler, NULL);
   
   TST_IRQHandler = Thread_IRQHandler;
   
@@ -735,13 +739,13 @@ void TC_ThreadInterrupts (void) {
   
   if (ThId_Running != NULL) {
 
-    NVIC_EnableIRQ((IRQn_Type)0);
+    NVIC_EnableIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     ThId_Isr = (osThreadId)(0-1);
 
     ISR_ExNum = 0; /* Test: osThreadCreate */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay(2);
@@ -752,18 +756,18 @@ void TC_ThreadInterrupts (void) {
     ThId_Isr = (osThreadId)(0-1);
 
     ISR_ExNum = 1; /* Test: osThreadGetId */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay(2);
 
-    ASSERT_TRUE (ThId_Isr == NULL);
+    ASSERT_TRUE (ThId_Isr != NULL);
 
     // [ILG]
     ThPr_Isr = osPriorityNormal;
 
     ISR_ExNum = 2; /* Test: osThreadGetPriority */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay(2);
@@ -774,7 +778,7 @@ void TC_ThreadInterrupts (void) {
     ThSt_Isr = osOK;
 
     ISR_ExNum = 3; /* Test: osThreadSetPriority */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay(2);
@@ -785,7 +789,7 @@ void TC_ThreadInterrupts (void) {
     ThSt_Isr = osOK;
 
     ISR_ExNum = 4; /* Test: osThreadTerminate */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay(2);
@@ -796,14 +800,14 @@ void TC_ThreadInterrupts (void) {
     ThSt_Isr = osOK;
 
     ISR_ExNum = 5; /* Test: osThreadYield */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay(2);
 
     ASSERT_TRUE (ThSt_Isr == osErrorISR);
     
-    NVIC_DisableIRQ((IRQn_Type)0);
+    NVIC_DisableIRQ((IRQn_Type)IRQn);
   }
 }
 
