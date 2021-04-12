@@ -523,8 +523,12 @@ void TC_SignalParam (void) {
 - Call all signal management functions from the ISR
 */
 void TC_SignalInterrupts (void) {
+  IRQn_Type IRQn = TIMER0_IRQn + TC_TIMER_CH;
   osEvent  event;
-  
+
+  TIMER_Init(TC_TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ, TIMER_MODE_FREERUN);
+  TIMER_CallbackISR(TC_TIMER_CH, (ISR_Callback)Signal_IRQHandler, NULL);
+
   TST_IRQHandler = Signal_IRQHandler;
   
   Var_ThreadId = osThreadGetId();
@@ -535,7 +539,7 @@ void TC_SignalInterrupts (void) {
     osSignalClear (Var_ThreadId, SIG_FLAG_MSK);
 
     /* Test signaling between ISR and main thread */
-    NVIC_EnableIRQ((IRQn_Type)0);
+    NVIC_EnableIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     event.status = osOK;
@@ -544,7 +548,7 @@ void TC_SignalInterrupts (void) {
     // -----
 
     ISR_ExNum = 0; /* Test: osSignalSet */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     event = osSignalWait (0x00000001, 100);
     ASSERT_TRUE (event.status == osEventSignal);
@@ -557,7 +561,7 @@ void TC_SignalInterrupts (void) {
     ISR_ExNum = 1; /* Test: osSignalClear */
     ASSERT_TRUE (osSignalSet (Var_ThreadId, 0x00000001) == 0);
 
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay (2);
@@ -569,7 +573,7 @@ void TC_SignalInterrupts (void) {
 
     ISR_ExNum = 2; /* Test: osSignalWait (no timeout) */
 
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay (2);
@@ -581,7 +585,7 @@ void TC_SignalInterrupts (void) {
 
     ISR_ExNum = 3; /* Test: osSignalWait (with timeout) */
 
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
 
     // [ILG]
     osDelay (2);
@@ -592,12 +596,12 @@ void TC_SignalInterrupts (void) {
     // Test the infinite timeout too.
     Evnt_Isr.status = osOK;
     ISR_ExNum = 4; /* Test: osSignalWait (with infinite timeout) */
-    NVIC_SetPendingIRQ((IRQn_Type)0);
+    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
     osDelay (2);
     ASSERT_TRUE (Evnt_Isr.status == osErrorISR);
     // -----
     
-    NVIC_DisableIRQ((IRQn_Type)0);
+    NVIC_DisableIRQ((IRQn_Type)IRQn);
 
   }
 }
