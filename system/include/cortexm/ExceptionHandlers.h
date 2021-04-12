@@ -55,9 +55,6 @@ extern "C"
   SysTick_Handler (void);
 
   extern void
-  Timer_Handler (int irq);
-
-  extern void
   Timer0_Handler (void);
 
   extern void

@@ -130,34 +130,48 @@ Default_Handler(void)
     }
 }
 // ----------------------------------------------------------------------------
+#include <stddef.h>
 
-void __attribute__ ((section(".after_vectors"),weak))
-Timer_Handler(int irq __attribute__((unused)))
+static ISR_Hnadler_t isr_handler_t[28] = { };
+
+void ISR_Register(int irq, ISR_Handler handler, void *argument)
 {
-	// DO NOT loop, just return.
-	// Useful in case someone (like STM HAL) inadvertently enables SysTick.
+	isr_handler_t[irq].func = handler;
+	isr_handler_t[irq].argument = argument;
 }
 
-void __attribute__ ((section(".after_vectors"),weak))
-Timer0_Handler(void) { Timer_Handler(0); }
+void ISR_UnRegister(int irq)
+{
+	isr_handler_t[irq].func = NULL;
+	isr_handler_t[irq].argument = NULL;
+}
+
+// ----------------------------------------------------------------------------
+#define _doISR(_irq)	do {	\
+		if (isr_handler_t[_irq].func) \
+			isr_handler_t[_irq].func(_irq, isr_handler_t[_irq].argument);	\
+	} while (0)
 
 void __attribute__ ((section(".after_vectors"),weak))
-Timer1_Handler(void) { Timer_Handler(1); }
+Timer0_Handler(void) { _doISR(TIMER0_IRQn); }
 
 void __attribute__ ((section(".after_vectors"),weak))
-Timer2_Handler(void) { Timer_Handler(2); }
+Timer1_Handler(void) { _doISR(TIMER1_IRQn); }
 
 void __attribute__ ((section(".after_vectors"),weak))
-Timer3_Handler(void) { Timer_Handler(3); }
+Timer2_Handler(void) { _doISR(TIMER2_IRQn); }
 
 void __attribute__ ((section(".after_vectors"),weak))
-Timer4_Handler(void) { Timer_Handler(4); }
+Timer3_Handler(void) { _doISR(TIMER3_IRQn); }
 
 void __attribute__ ((section(".after_vectors"),weak))
-Timer5_Handler(void) { Timer_Handler(5); }
+Timer4_Handler(void) { _doISR(TIMER4_IRQn); }
 
 void __attribute__ ((section(".after_vectors"),weak))
-Timer6_Handler(void) { Timer_Handler(6); }
+Timer5_Handler(void) { _doISR(TIMER5_IRQn); }
 
 void __attribute__ ((section(".after_vectors"),weak))
-Timer7_Handler(void) { Timer_Handler(7); }
+Timer6_Handler(void) { _doISR(TIMER6_IRQn); }
+
+void __attribute__ ((section(".after_vectors"),weak))
+Timer7_Handler(void) { _doISR(TIMER7_IRQn); }

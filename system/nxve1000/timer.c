@@ -11,9 +11,6 @@
 #ifdef TIMER_ENABLED
 
 #define TIMER_CHS				8
-#ifndef TIMER_CLOCK_HZ
-#define TIMER_CLOCK_HZ			1000000			/* 1Mhz */
-#endif
 #define	TIMER_MAX_COUNT			-(1UL)
 #define TIMER_MUX_SEL			0 				/* bypass */
 
@@ -42,158 +39,145 @@ typedef struct {
 /*
  * Timer HW
  */
-struct TIMER_t {
+static struct TIMER_t {
 	Timer_Reg *base;
 	uint64_t timestamp;
 	uint32_t lastdec;
+	uint32_t ratio;
 	int irqno;
-	ISR_CB cb;
-};
+	TIMER_MODE_t mode;
+	ISR_Callback_t cb;
+} _timer[TIMER_CHS] = { };
 
-static struct TIMER_t timer_t[TIMER_CHS];
-static struct TIMER_t *systimer = NULL;
-
-#ifndef RTOS_ENABLED
-static uint64_t TIMER_GetTickUS(void)
+uint64_t TIMER_GetTickUS(int ch)
 {
-	uint64_t time = systimer->timestamp;
-	uint32_t lastdec = systimer->lastdec;
-	uint32_t now = TIMER_MAX_COUNT - readl(&systimer->base->TCNTO);
+	uint64_t time = _timer[ch].timestamp;
+	uint32_t lastdec = _timer[ch].lastdec;
+	uint32_t now = (TIMER_MAX_COUNT - readl(&_timer[ch].base->TCNTO)) / _timer[ch].ratio;
 
 	if (now >= lastdec)
 		time += now - lastdec;
 	else
 		time += now + TIMER_MAX_COUNT - lastdec;
 
-	systimer->lastdec = now;
-	systimer->timestamp = time;
+	_timer[ch].lastdec = now;
+	_timer[ch].timestamp = time;
 
-	return systimer->timestamp;
+	return _timer[ch].timestamp;
 }
 
-static void TIMER_Delay(int ms)
+void TIMER_Delay(int ch, int ms)
 {
-	uint64_t end = TIMER_GetTickUS() + (uint64_t)ms * 1000;
+	uint64_t end = TIMER_GetTickUS(ch) + (uint64_t)ms * 1000;
 
-	while (TIMER_GetTickUS() < end) {
+	while (TIMER_GetTickUS(ch) < end) {
 			;
 	};
 }
 
-static SysTime_Op SysTick_Op __attribute__((unused)) = {
-	.Delay = TIMER_Delay,
-	.GetTickUS = TIMER_GetTickUS,
-};
-#else
-#include <rtos.h>
-
-void Timer_Handler(int irq)
+void TIMER_Frequency(int ch, int mux, int scale,
+							unsigned int count, unsigned int cmp)
 {
-	struct TIMER_t *timer = &timer_t[irq];
+	struct TIMER_t *timer = &_timer[ch];
 
-	writel(TINT_STATUS | TINT_ENABLE, &timer->base->TINT_CSTAT);
-	if (timer->cb.func)
-		timer->cb.func(timer->cb.argument);
-}
-
-static void rtos_Delay(int ms)
-{
-	vTaskDelay((TickType_t)ms);
-}
-
-static uint64_t rtos_GetTickUS(void)
-{
-	return (uint64_t)(xTaskGetTickCount() * 1000);
-}
-
-static SysTime_Op SysTick_Op = {
-	.Delay = rtos_Delay,
-	.GetTickUS = rtos_GetTickUS,
-};
-#endif
-
-static void TIMER_Config(int ch, int mux, int scale, unsigned int count)
-{
-	struct TIMER_t *timer = &timer_t[ch];
-
-	writel(_mask(timer->base->TCFG1, TCFG1_MUX_MASK) | (uint32_t)mux, &timer->base->TCFG1);
-	writel(_mask(timer->base->TCFG0, TCFG0_PRESCALER_MASK) | (uint32_t)(scale - 1), &timer->base->TCFG0);
+	writel(_mask(timer->base->TCFG1, TCFG1_MUX_MASK) |
+			(uint32_t)mux, &timer->base->TCFG1);
+	writel(_mask(timer->base->TCFG0, TCFG0_PRESCALER_MASK) |
+			(uint32_t)(scale - 1), &timer->base->TCFG0);
 	writel(count, &timer->base->TCNTB);
-	writel(count, &timer->base->TCMPB);
+	writel(cmp, &timer->base->TCMPB);
 }
 
-static void TIMER_Start(int ch, bool irqenb)
+void TIMER_Start(int ch)
 {
-	struct TIMER_t *timer = &timer_t[ch];
+	struct TIMER_t *timer = &_timer[ch];
 
-	if (irqenb)
+	if (timer->mode != TIMER_MODE_FREERUN)
 		writel(TINT_STATUS | TINT_ENABLE, &timer->base->TINT_CSTAT);
 
 	writel((readl(&timer->base->TCON) | TCON_MANUALUPDATE), &timer->base->TCON);
 	writel(TCON_AUTORELOAD | TCON_START, &timer->base->TCON);
 }
 
-static void TIMER_Stop(int ch)
+void TIMER_Stop(int ch)
 {
-	struct TIMER_t *timer = &timer_t[ch];
+	struct TIMER_t *timer = &_timer[ch];
 
 	writel(0x0, &timer->base->TINT_CSTAT);
 	writel(_mask(timer->base->TCON, TCON_START), &timer->base->TCON);
 }
 
-int TIMER_Init(int ch, unsigned int infreq, unsigned int tfreq, int hz __attribute__((unused)))
+static void Timer_Handler(int irq, void *argument);
+
+int TIMER_Init(int ch, unsigned int infreq, unsigned int tfreq, int hz, TIMER_MODE_t mode)
 {
-	struct TIMER_t *timer = &timer_t[ch];
-	unsigned int count;
-	bool irqenb;
-	int scale;
-	
-	if (ch > 7)
-		return -1;
+	struct TIMER_t *timer = &_timer[ch];
+	unsigned int count = TIMER_MAX_COUNT;
+	int scale = (int)(infreq / tfreq);
 
 	timer->base = (void *)(TIMER_PHY_BASE + (TIMER_CH_OFFSET * ch));
+	timer->ratio = tfreq / ((unsigned int)hz * 1000);
 	timer->irqno = TIMER0_IRQn + ch;
+	timer->mode = mode;
 
-	if (!tfreq)
-		tfreq = TIMER_CLOCK_HZ;
-
-#ifdef RTOS_ENABLED
-	irqenb = true;
-	count = tfreq / (unsigned  int)hz;
-	scale = (int)(infreq / tfreq);
-
-	NVIC_SetPriority(timer->irqno, 0);
-	NVIC_EnableIRQ(timer->irqno);
-#else
-	irqenb = false;
-	count = TIMER_MAX_COUNT;
-	scale = (int)infreq / tfreq;
-#endif
+	ISR_Register(TIMER0_IRQn + ch, Timer_Handler, NULL);
+	if (timer->mode != TIMER_MODE_FREERUN) {
+		count = tfreq / (unsigned  int)hz;
+		NVIC_SetPriority(timer->irqno, 0);
+		NVIC_EnableIRQ(timer->irqno);
+	}
 
 	TIMER_Stop(ch);
-	TIMER_Config(ch, TIMER_MUX_SEL, scale, count);
-	TIMER_Start(ch, irqenb);
+	TIMER_Frequency(ch, TIMER_MUX_SEL, scale, count, count);
 
 	return 0;
 }
 
-void TIMER_Register(int ch, unsigned int infreq, unsigned int tfreq, int hz)
+static int systime_ch;
+#define SysTime_Channel(_ch)		(systime_ch = _ch)
+#define SysTime_GetChannel()		(systime_ch)
+
+static uint64_t __SysTime_GetTickUS(void)
+{
+	return TIMER_GetTickUS(SysTime_GetChannel());
+}
+
+static void __SysTime_Delay(int ms)
+{
+	TIMER_Delay(SysTime_GetChannel(), ms);
+}
+
+static SysTime_Op Timer_Op = {
+	.GetTickUS = __SysTime_GetTickUS,
+	.Delay = __SysTime_Delay,
+};
+
+void TIMER_Register(int ch, unsigned int infreq, unsigned int tfreq, int hz,
+					TIMER_MODE_t mode, SysTime_Op *op)
 {
 	if (ch < 0 || ch > TIMER_CHS)
 		return;
 
-	TIMER_Init(ch, infreq, tfreq, hz);
+	SysTime_Channel(ch);
+	SysTime_Register(op ? op : &Timer_Op);
 
-	systimer = &timer_t[ch];
-
-	SysTime_Register(&SysTick_Op);
+	TIMER_Init(ch, infreq, tfreq, hz, mode);
+	TIMER_Start(ch);
 }
 
-void TIMER_ISR_Register(int ch, ISR_Handler handler, void *argument)
+static void Timer_Handler(int irq, void *argument __attribute__((unused)))
 {
-	struct TIMER_t *timer = &timer_t[ch];
+	struct TIMER_t *timer = &_timer[irq - TIMER0_IRQn];
+	uint32_t flag = readl(&timer->base->TINT_CSTAT) | TINT_ENABLE;
 
-	timer->cb.func = handler;
-	timer->cb.argument = argument;
+	writel(TINT_STATUS | flag, &timer->base->TINT_CSTAT);
+	if (timer->cb.func)
+		timer->cb.func(timer->cb.argument);
 }
-#endif
+
+void TIMER_CallbackISR(int ch, ISR_Callback cb, void *argument)
+{
+	_timer[ch].cb.func = cb;
+	_timer[ch].cb.argument = argument;
+}
+#endif  /* TIMER_ENABLED */
