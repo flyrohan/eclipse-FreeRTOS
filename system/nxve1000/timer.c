@@ -44,6 +44,8 @@ static struct TIMER_t {
 	uint64_t timestamp;
 	uint32_t lastdec;
 	uint32_t ratio;
+	uint32_t infreq;
+	uint32_t tfreq;
 	int irqno;
 	TIMER_MODE_t mode;
 	ISR_Callback_t cb;
@@ -53,7 +55,9 @@ uint64_t TIMER_GetTickUS(int ch)
 {
 	uint64_t time = _timer[ch].timestamp;
 	uint32_t lastdec = _timer[ch].lastdec;
-	uint32_t now = (TIMER_MAX_COUNT - readl(&_timer[ch].base->TCNTO)) / _timer[ch].ratio;
+	uint32_t now = (TIMER_MAX_COUNT - readl(&_timer[ch].base->TCNTO));
+
+	now /= _timer[ch].ratio;
 
 	if (now >= lastdec)
 		time += now - lastdec;
@@ -75,15 +79,28 @@ void TIMER_Delay(int ch, int ms)
 	};
 }
 
-void TIMER_Frequency(int ch, int mux, int scale,
-							unsigned int count, unsigned int cmp)
+void TIMER_Frequency(int ch, int hz, int duty, bool invert)
 {
 	struct TIMER_t *timer = &_timer[ch];
+	unsigned int scale = (timer->infreq / timer->tfreq) - 1;
+	unsigned int count, cmp;
 
-	writel(_mask(timer->base->TCFG1, TCFG1_MUX_MASK) |
-			(uint32_t)mux, &timer->base->TCFG1);
-	writel(_mask(timer->base->TCFG0, TCFG0_PRESCALER_MASK) |
-			(uint32_t)(scale - 1), &timer->base->TCFG0);
+	timer->ratio = timer->tfreq / ((unsigned int)hz * 1000);
+
+	if (timer->mode == TIMER_MODE_SYSTIMER || timer->mode == TIMER_MODE_MAXCOUNT) {
+		count = TIMER_MAX_COUNT;
+		cmp = TIMER_MAX_COUNT;
+	} else {
+		count = timer->tfreq / (unsigned int)hz;
+		cmp = count / (100 / (unsigned int)duty);
+	}
+
+	writel(_mask(timer->base->TCON, TCON_INVERT) | (invert ? TCON_INVERT : 0),
+		   &timer->base->TCON);
+	writel(_mask(timer->base->TCFG1, TCFG1_MUX_MASK) | TIMER_MUX_SEL,
+		   &timer->base->TCFG1);
+	writel(_mask(timer->base->TCFG0, TCFG0_PRESCALER_MASK) | scale,
+		   &timer->base->TCFG0);
 	writel(count, &timer->base->TCNTB);
 	writel(cmp, &timer->base->TCMPB);
 }
@@ -92,7 +109,7 @@ void TIMER_Start(int ch)
 {
 	struct TIMER_t *timer = &_timer[ch];
 
-	if (timer->mode != TIMER_MODE_FREERUN)
+	if (timer->mode == TIMER_MODE_PERIODIC)
 		writel(TINT_STATUS | TINT_ENABLE, &timer->base->TINT_CSTAT);
 
 	writel((readl(&timer->base->TCON) | TCON_MANUALUPDATE), &timer->base->TCON);
@@ -109,26 +126,23 @@ void TIMER_Stop(int ch)
 
 static void Timer_Handler(int irq, void *argument);
 
-int TIMER_Init(int ch, unsigned int infreq, unsigned int tfreq, int hz, TIMER_MODE_t mode)
+int TIMER_Init(int ch, unsigned int infreq, unsigned int tfreq,
+			   TIMER_MODE_t mode)
 {
 	struct TIMER_t *timer = &_timer[ch];
-	unsigned int count = TIMER_MAX_COUNT;
-	int scale = (int)(infreq / tfreq);
 
 	timer->base = (void *)(TIMER_PHY_BASE + (TIMER_CH_OFFSET * ch));
-	timer->ratio = tfreq / ((unsigned int)hz * 1000);
 	timer->irqno = TIMER0_IRQn + ch;
 	timer->mode = mode;
+	timer->infreq = infreq;
+	timer->tfreq = tfreq;
 
 	ISR_Register(TIMER0_IRQn + ch, Timer_Handler, NULL);
-	if (timer->mode != TIMER_MODE_FREERUN) {
-		count = tfreq / (unsigned  int)hz;
+
+	if (timer->mode == TIMER_MODE_PERIODIC) {
 		NVIC_SetPriority(timer->irqno, 0);
 		NVIC_EnableIRQ(timer->irqno);
 	}
-
-	TIMER_Stop(ch);
-	TIMER_Frequency(ch, TIMER_MUX_SEL, scale, count, count);
 
 	return 0;
 }
@@ -153,15 +167,15 @@ static SysTime_Op Timer_Op = {
 };
 
 void TIMER_Register(int ch, unsigned int infreq, unsigned int tfreq, int hz,
-					TIMER_MODE_t mode, SysTime_Op *op)
+					TIMER_MODE_t mode)
 {
-	if (ch < 0 || ch > TIMER_CHS)
-		return;
+	if (mode == TIMER_MODE_SYSTIMER) {
+		SysTime_Channel(ch);
+		SysTime_Register(&Timer_Op);
+	}
 
-	SysTime_Channel(ch);
-	SysTime_Register(op ? op : &Timer_Op);
-
-	TIMER_Init(ch, infreq, tfreq, hz, mode);
+	TIMER_Init(ch, infreq, tfreq, mode);
+	TIMER_Frequency(ch, hz, 100, true);
 	TIMER_Start(ch);
 }
 
