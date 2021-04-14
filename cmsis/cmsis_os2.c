@@ -447,7 +447,7 @@ osThreadId_t osThreadNew (osThreadFunc_t func, void *argument, const osThreadAtt
       if (attr->stack_size > 0U) {
         /* In FreeRTOS stack is not in bytes, but in sizeof(StackType_t) which is 4 on ARM ports.       */
         /* Stack size should be therefore 4 byte aligned in order to avoid division caused side effects */
-        stack = attr->stack_size / sizeof(StackType_t);
+        stack = ((attr->stack_size +  (sizeof(StackType_t) - 1)) / sizeof(StackType_t)) * sizeof(StackType_t);
       }
 
       if ((attr->cb_mem    != NULL) && (attr->cb_size    >= sizeof(StaticTask_t)) &&

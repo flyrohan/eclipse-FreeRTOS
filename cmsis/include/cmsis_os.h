@@ -444,7 +444,7 @@ const osThreadDef_t os_thread_def_##name = \
     NULL,\
     0U, \
     NULL, \
-    ((stacksz) ? (stacksz) : OS_STKSIZE) * sizeof(StackType_t), \
+    ((stacksz) ? (stacksz) : OS_STKSIZE), \
     (priority), 0U, 0U } }
 #endif
  
