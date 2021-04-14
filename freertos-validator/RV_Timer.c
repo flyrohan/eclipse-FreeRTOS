@@ -241,22 +241,20 @@ void TC_TimerParam (void) {
 void TC_TimerInterrupts (void) {
   
   TST_IRQHandler = Timer_IRQHandler;
-  IRQn_Type IRQn = TIMER0_IRQn + TC_TIMER_CH;
 
-  TIMER_Init(TC_TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ, TIMER_MODE_FREERUN);
-  TIMER_CallbackISR(TC_TIMER_CH, (ISR_Callback)Timer_IRQHandler, NULL);
+  TC_TEST_SETUP;
 
   TimId_Running = osTimerCreate (osTimer (Tim_Running), osTimerPeriodic, NULL);
   ASSERT_TRUE (TimId_Running != NULL);
   
   if (TimId_Running != NULL) {
-    NVIC_EnableIRQ((IRQn_Type)IRQn);
+    NVIC_EnableIRQ((IRQn_Type)TC_TEST_IRQ);
     
     // [ILG]
     TimId_Isr = (osTimerId)(0-1);
 
     ISR_ExNum = 0; /* Test: osTimerCreate (One Shoot) */
-    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+    NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
     // [ILG]
     osDelay(2);
     ASSERT_TRUE (TimId_Isr == NULL);
@@ -265,7 +263,7 @@ void TC_TimerInterrupts (void) {
     TimId_Isr = (osTimerId)(0-1);
 
     ISR_ExNum = 1; /* Test: osTimerCreate (Periodic) */
-    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+    NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
     // [ILG]
     osDelay(2);
     ASSERT_TRUE (TimId_Isr == NULL);
@@ -274,7 +272,7 @@ void TC_TimerInterrupts (void) {
     TimSt_Isr = osOK;
 
     ISR_ExNum = 2; /* Test: osTimerStart */
-    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+    NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
     // [ILG]
     osDelay(2);
     ASSERT_TRUE (TimSt_Isr == osErrorISR);
@@ -283,7 +281,7 @@ void TC_TimerInterrupts (void) {
     TimSt_Isr = osOK;
 
     ISR_ExNum = 3; /* Test: osTimerStop */
-    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+    NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
     // [ILG]
     osDelay(2);
     ASSERT_TRUE (TimSt_Isr == osErrorISR);
@@ -292,12 +290,12 @@ void TC_TimerInterrupts (void) {
     TimSt_Isr = osOK;
 
     ISR_ExNum = 4; /* Test: osTimerDelete */
-    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+    NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
     // [ILG]
     osDelay(2);
     ASSERT_TRUE (TimSt_Isr == osErrorISR);
     
-    NVIC_DisableIRQ((IRQn_Type)IRQn);
+    NVIC_DisableIRQ((IRQn_Type)TC_TEST_IRQ);
   }
 }
 

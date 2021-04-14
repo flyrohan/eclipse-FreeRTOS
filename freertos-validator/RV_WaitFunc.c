@@ -11,7 +11,7 @@
 
 #ifdef CMSIS_RV_WAITFUNC
 
-#define osKernelSysTickFrequency	48000000
+#define osKernelSysTickFrequency	SYSTEM_CLOCK
 /*-----------------------------------------------------------------------------
  *      Test configuration
  *----------------------------------------------------------------------------*/

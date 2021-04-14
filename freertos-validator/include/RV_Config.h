@@ -22,4 +22,12 @@
 #define BUFFER_ASSERTIONS           128  
 // </h>
   
+#define TC_TIMER_CH		(1)
+#define TC_TEST_IRQ		(TIMER0_IRQn + TC_TIMER_CH)
+#define TC_TEST_SETUP	do { \
+		TIMER_Init(TC_TIMER_CH, SYSTEM_CLOCK, TIMER_MODE_FREERUN); \
+		TIMER_CallbackISR(TC_TIMER_CH, (ISR_Callback)TST_IRQHandler, NULL); \
+	} while (0)
+
+
 #endif /* __RV_CONFIG_H */

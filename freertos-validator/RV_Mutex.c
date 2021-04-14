@@ -551,17 +551,14 @@ void TC_MutexParam (void) {
 - Call all mutex management functions from the ISR
 */
 void TC_MutexInterrupts (void) {
-  IRQn_Type IRQn = TIMER0_IRQn + TC_TIMER_CH;
 
-  TIMER_Init(TC_TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ, TIMER_MODE_FREERUN);
-  TIMER_CallbackISR(TC_TIMER_CH, (ISR_Callback)Mutex_IRQHandler, NULL);
-  
   TST_IRQHandler = Mutex_IRQHandler;
-  
-  NVIC_EnableIRQ((IRQn_Type)IRQn);
+  TC_TEST_SETUP;
+
+  NVIC_EnableIRQ((IRQn_Type)TC_TEST_IRQ);
   
   Isr.Ex_Num = 0; /* Test: osMutexCreate */
-  NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+  NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
   ASSERT_TRUE (ISR_MutexId == NULL);
   
   Isr.Ex_Num = 1; /* Test: osMutexWait */
@@ -575,7 +572,7 @@ void TC_MutexInterrupts (void) {
     // [ILG]
     ISR_OsStat = osOK;
 
-    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+    NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
     // [ILG]
     osDelay(2);
@@ -586,7 +583,7 @@ void TC_MutexInterrupts (void) {
     ISR_OsStat = osOK;
 
     Isr.Ex_Num = 2; /* Test: osMutexRelease */
-    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+    NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
     // [ILG]
     osDelay(2);
@@ -597,7 +594,7 @@ void TC_MutexInterrupts (void) {
     ISR_OsStat = osOK;
 
     Isr.Ex_Num = 3; /* Test: osMutexDelete */
-    NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+    NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
     // [ILG]
     osDelay(2);
@@ -608,7 +605,7 @@ void TC_MutexInterrupts (void) {
     ASSERT_TRUE (osMutexDelete (ISR_MutexId) == osOK);
   }
   
-  NVIC_DisableIRQ((IRQn_Type)IRQn);
+  NVIC_DisableIRQ((IRQn_Type)TC_TEST_IRQ);
 }
 
 /**

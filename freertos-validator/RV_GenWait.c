@@ -63,7 +63,7 @@ test cases check the functions osDelay and osWait and call the generic wait func
 - Function calls must return osEventTimeout.
 */
 void TC_GenWaitBasic (void) {
-  ASSERT_TRUE (osDelay (10) == osEventTimeout);
+  ASSERT_TRUE (osDelay (10) == osOK);
   // [ILG]
   // `osFeatureWait` does not exist in CMSIS RTOS, so this
   // case was not tested. Enable it using the correct macro.
@@ -85,8 +85,9 @@ void TC_GenWaitBasic (void) {
 void TC_GenWaitInterrupts (void) {
   
   TST_IRQHandler = GenWait_IRQHandler;
+  TC_TEST_SETUP;
   
-  NVIC_EnableIRQ((IRQn_Type)0);
+  NVIC_EnableIRQ((IRQn_Type)TC_TEST_IRQ);
   
   ISR_ExNum = 0; /* Test: osDelay */
 
@@ -94,7 +95,7 @@ void TC_GenWaitInterrupts (void) {
   // Be sure the tested value is initialised with a different value.
   Stat_Isr = osOK;
 
-  NVIC_SetPendingIRQ((IRQn_Type)0);
+  NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
   // [ILG]
   // Do not expect infinite speed
@@ -116,7 +117,7 @@ void TC_GenWaitInterrupts (void) {
 
   // [ILG]
   // IRQ_SetPend() does not exist in CMSIS
-  NVIC_SetPendingIRQ((IRQn_Type)0);
+  NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
   // IRQ_SetPend (0);
 
   // [ILG]
@@ -128,7 +129,7 @@ void TC_GenWaitInterrupts (void) {
   // ASSERT_TRUE (Stat_Isr == osErrorISR);
  #endif
   
-  NVIC_DisableIRQ((IRQn_Type)0);
+  NVIC_DisableIRQ((IRQn_Type)TC_TEST_IRQ);
 }
 
 /**

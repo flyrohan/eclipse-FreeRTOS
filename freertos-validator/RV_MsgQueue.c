@@ -299,20 +299,17 @@ void TC_MsgQParam (void) {
 - Call all message queue management functions from the ISR
 */
 void TC_MsgQInterrupts (void) {
-  IRQn_Type IRQn = TIMER0_IRQn + TC_TIMER_CH;
-
-  TIMER_Init(TC_TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ, TIMER_MODE_FREERUN);
-  TIMER_CallbackISR(TC_TIMER_CH, (ISR_Callback)MsgQueue_IRQHandler, NULL);
 
   TST_IRQHandler = MsgQueue_IRQHandler;
+  TC_TEST_SETUP;
   
-  NVIC_EnableIRQ((IRQn_Type)IRQn);
+  NVIC_EnableIRQ((IRQn_Type)TC_TEST_IRQ);
   
   // [ILG]
   MsgQId_Isr = (osMessageQId)(0-1);
 
   ISR_ExNum = 0;  /* Test: osMessageCreate */
-  NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+  NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
   // [ILG]
   osDelay(2);
@@ -329,7 +326,7 @@ void TC_MsgQInterrupts (void) {
       MsgQSt_Isr = osErrorOS;
 
       ISR_ExNum = 1; /* Test: osMessagePut, no time-out */
-      NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+      NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
       // [ILG]
       osDelay(2);
@@ -340,7 +337,7 @@ void TC_MsgQInterrupts (void) {
       MsgQSt_Isr = osOK;
 
       ISR_ExNum = 2; /* Test: osMessagePut, with time-out */
-      NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+      NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
       // [ILG]
       osDelay(2);
@@ -351,7 +348,7 @@ void TC_MsgQInterrupts (void) {
       MsgQEv_Isr.status = osOK;
 
       ISR_ExNum = 3; /* Test: osMessageGet, no time-out */
-      NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+      NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
       // [ILG]
       osDelay(2);
@@ -362,7 +359,7 @@ void TC_MsgQInterrupts (void) {
       MsgQEv_Isr.status = osOK;
 
       ISR_ExNum = 4; /* Test: osMessageGet, with time-out */
-      NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+      NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
       // [ILG]
       osDelay(2);
@@ -373,21 +370,21 @@ void TC_MsgQInterrupts (void) {
       // Test the infinite timeout too.
       MsgQSt_Isr = osOK;
       ISR_ExNum = 7; /* Test: osMessagePut, with infinite time-out */
-      NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+      NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
       osDelay(2);
       ASSERT_TRUE (MsgQSt_Isr == osErrorParameter);
 
       // Test the infinite timeout too.
       MsgQEv_Isr.status = osOK;
       ISR_ExNum = 8; /* Test: osMessageGet, with infinite time-out */
-      NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+      NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
       osDelay(2);
       ASSERT_TRUE (MsgQEv_Isr.status == osErrorParameter);
       // -----
     }
   }
   
-  NVIC_DisableIRQ((IRQn_Type)IRQn);
+  NVIC_DisableIRQ((IRQn_Type)TC_TEST_IRQ);
 }
 
 /*=======0=========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1====*/
@@ -402,15 +399,11 @@ void TC_MsgFromThreadToISR (void) {
   osEvent  evt;
   uint32_t cnt;
 
-  IRQn_Type IRQn = TIMER0_IRQn + TC_TIMER_CH;
-
-  TIMER_Init(TC_TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ, TIMER_MODE_FREERUN);
-  TIMER_CallbackISR(TC_TIMER_CH, (ISR_Callback)MsgQueue_IRQHandler, NULL);
-  
   TST_IRQHandler = MsgQueue_IRQHandler;
+  TC_TEST_SETUP;
   
   ISR_ExNum = 5;                        /* Set case number in the ISR         */
-  NVIC_EnableIRQ((IRQn_Type)IRQn);
+  NVIC_EnableIRQ((IRQn_Type)TC_TEST_IRQ);
 
   G_MsgQ_ThreadId = osThreadGetId ();
   ASSERT_TRUE (G_MsgQ_ThreadId != NULL);
@@ -457,7 +450,7 @@ void TC_MsgFromThreadToISR (void) {
       ASSERT_TRUE (osTimerDelete (G_MsgQ_TimerId) == osOK);
     }
   }
-  NVIC_DisableIRQ((IRQn_Type)IRQn);
+  NVIC_DisableIRQ((IRQn_Type)TC_TEST_IRQ);
 }
 
 /*=======0=========1=========2=========3=========4=========5=========6=========7=========8=========9=========0=========1====*/
@@ -473,15 +466,11 @@ void TC_MsgFromISRToThread (void) {
   osEvent  evt;
   uint32_t cnt;
 
-  IRQn_Type IRQn = TIMER0_IRQn + TC_TIMER_CH;
-
-  TIMER_Init(TC_TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ, TIMER_MODE_FREERUN);
-  TIMER_CallbackISR(TC_TIMER_CH, (ISR_Callback)MsgQueue_IRQHandler, NULL);
-  
   TST_IRQHandler = MsgQueue_IRQHandler;
+  TC_TEST_SETUP;
   
   ISR_ExNum = 6;                        /* Set case number in the ISR         */
-  NVIC_EnableIRQ((IRQn_Type)IRQn);
+  NVIC_EnableIRQ((IRQn_Type)TC_TEST_IRQ);
   
   G_MsgQ_ThreadId = osThreadGetId ();
   ASSERT_TRUE (G_MsgQ_ThreadId != NULL);
@@ -530,7 +519,7 @@ void TC_MsgFromISRToThread (void) {
       ASSERT_TRUE (osTimerDelete (G_MsgQ_TimerId) == osOK);
     }
   }
-  NVIC_DisableIRQ((IRQn_Type)IRQn);
+  NVIC_DisableIRQ((IRQn_Type)TC_TEST_IRQ);
 }
 
 /**

@@ -505,20 +505,17 @@ void TC_SemParam (void) {
 - Call all semaphore management functions from the ISR
 */
 void TC_SemInterrupts (void) {
-  IRQn_Type IRQn = TIMER0_IRQn + TC_TIMER_CH;
-
-  TIMER_Init(TC_TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ, TIMER_MODE_FREERUN);
-  TIMER_CallbackISR(TC_TIMER_CH, (ISR_Callback)Semaphore_IRQHandler, NULL);
   
   TST_IRQHandler = Semaphore_IRQHandler;
+  TC_TEST_SETUP;
   
-  NVIC_EnableIRQ((IRQn_Type)IRQn);
+  NVIC_EnableIRQ((IRQn_Type)TC_TEST_IRQ);
   
   // [ILG]
   SemId_Isr = (osSemaphoreId)(0-1);
 
   ISR_ExNum = 0; /* Test: osSemaphoreCreate */
-  NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+  NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
   // [ILG]
   osDelay(2);
@@ -539,7 +536,7 @@ void TC_SemInterrupts (void) {
       NumTokens_Isr = 0;
 
       ISR_ExNum = 1; /* Test: osSemaphoreWait (no time-out) */
-      NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+      NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
       // [ILG]
       osDelay(2);
@@ -552,7 +549,7 @@ void TC_SemInterrupts (void) {
         NumTokens_Isr = 0;
 
         ISR_ExNum = 2; /* Test: osSemaphoreWait (with time-out) */
-        NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+        NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
         // [ILG]
         osDelay(2);
@@ -566,7 +563,7 @@ void TC_SemInterrupts (void) {
           SemSt_Isr = osErrorOS;
 
           ISR_ExNum = 3; /* Test: osSemaphoreRelease */
-          NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+          NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
           // [ILG]
           osDelay(2);
@@ -579,7 +576,7 @@ void TC_SemInterrupts (void) {
         NumTokens_Isr = 0;
 
         ISR_ExNum = 5; /* Test: osSemaphoreWait (with infinite time-out) */
-        NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+        NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
         // [ILG]
         osDelay(2);
@@ -592,7 +589,7 @@ void TC_SemInterrupts (void) {
       SemSt_Isr = osErrorOS;
 
       ISR_ExNum = 4;  /* Test: osSemaphoreDelete */
-      NVIC_SetPendingIRQ((IRQn_Type)IRQn);
+      NVIC_SetPendingIRQ((IRQn_Type)TC_TEST_IRQ);
 
       // [ILG]
       osDelay(2);
@@ -600,7 +597,7 @@ void TC_SemInterrupts (void) {
       ASSERT_TRUE (SemSt_Isr == osErrorISR);
     }
   }
-  NVIC_DisableIRQ((IRQn_Type)IRQn);
+  NVIC_DisableIRQ((IRQn_Type)TC_TEST_IRQ);
 }
 
 /**
