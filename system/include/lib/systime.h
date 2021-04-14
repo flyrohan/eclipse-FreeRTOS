@@ -5,12 +5,12 @@
 
 typedef struct {
 	void	 (*Delay)(int ms);
-	uint64_t (*GetTickUS)(void);
+	uint64_t (*GetTimeUS)(void);
 } SysTime_Op;
 
 void SysTime_Delay(int ms);
-uint64_t SysTime_GetTick(void);
-uint64_t SysTime_GetTickUS(void);
+uint64_t SysTime_GetTime(void);
+uint64_t SysTime_GetTimeUS(void);
 void SysTime_Register(SysTime_Op *op);
 
 #endif

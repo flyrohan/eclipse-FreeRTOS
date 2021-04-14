@@ -51,7 +51,7 @@ static struct TIMER_t {
 	ISR_Callback_t cb;
 } _timer[TIMER_CHS] = { };
 
-uint64_t TIMER_GetTickUS(int ch)
+uint64_t TIMER_GetTimeUS(int ch)
 {
 	uint64_t time = _timer[ch].timestamp;
 	uint32_t lastdec = _timer[ch].lastdec;
@@ -72,9 +72,9 @@ uint64_t TIMER_GetTickUS(int ch)
 
 void TIMER_Delay(int ch, int ms)
 {
-	uint64_t end = TIMER_GetTickUS(ch) + (uint64_t)ms * 1000;
+	uint64_t end = TIMER_GetTimeUS(ch) + (uint64_t)ms * 1000;
 
-	while (TIMER_GetTickUS(ch) < end) {
+	while (TIMER_GetTimeUS(ch) < end) {
 			;
 	};
 }
@@ -151,9 +151,9 @@ static int systime_ch;
 #define SysTime_Channel(_ch)		(systime_ch = _ch)
 #define SysTime_GetChannel()		(systime_ch)
 
-static uint64_t __SysTime_GetTickUS(void)
+static uint64_t __SysTime_GetTimeUS(void)
 {
-	return TIMER_GetTickUS(SysTime_GetChannel());
+	return TIMER_GetTimeUS(SysTime_GetChannel());
 }
 
 static void __SysTime_Delay(int ms)
@@ -162,7 +162,7 @@ static void __SysTime_Delay(int ms)
 }
 
 static SysTime_Op Timer_Op = {
-	.GetTickUS = __SysTime_GetTickUS,
+	.GetTimeUS = __SysTime_GetTimeUS,
 	.Delay = __SysTime_Delay,
 };
 

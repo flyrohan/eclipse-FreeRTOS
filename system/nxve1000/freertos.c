@@ -469,7 +469,7 @@ void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
 }
 #endif /* configUSE_TICKLESS_IDLE */
 
-static uint64_t __SysTime_GetTickUS(void)
+static uint64_t __SysTime_GetTimeUS(void)
 {
 	return (uint64_t)(xTaskGetTickCount() * 1000);
 }
@@ -480,7 +480,7 @@ static void __SysTime_Delay(int ms)
 }
 
 static SysTime_Op Timer_Op = {
-	.GetTickUS = __SysTime_GetTickUS,
+	.GetTimeUS = __SysTime_GetTimeUS,
 	.Delay = __SysTime_Delay,
 };
 

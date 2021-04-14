@@ -17,7 +17,7 @@ void TIMER_Frequency(int ch, int hz, int duty, bool invert);
 void TIMER_Start(int ch);
 void TIMER_Stop(int ch);
 
-uint64_t TIMER_GetTickUS(int ch);
+uint64_t TIMER_GetTimeUS(int ch);
 void TIMER_Delay(int ch, int ms);
 
 void TIMER_CallbackISR(int ch, ISR_Callback cb, void *argument);

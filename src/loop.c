@@ -134,7 +134,7 @@ CMD_TYPE int do_loop(int argc, char * const argv[])
 		count = (int)strtoul(argv[2], NULL, 10);
 
 	for (int i = 0; i < count; i++)	{
-		uint32_t tick = (uint32_t)SysTime_GetTick();
+		uint32_t tick = (uint32_t)SysTime_GetTime();
 
 		if (Tstc())
 			CRTLC_EXIT();	
