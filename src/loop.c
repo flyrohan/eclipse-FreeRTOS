@@ -20,6 +20,7 @@ static struct loop_t {
 	.ms = 1000,
 	.count = 10,
 };
+#define LOOP_STACK_SIZE			128
 
 #ifdef CMSIS_ENABLED
 static osThreadId Loop_Handle = NULL;
@@ -61,7 +62,7 @@ CMD_TYPE int do_loop(int argc, char * const argv[])
 	if (Loop_Handle)
 		osThreadTerminate(Loop_Handle);
 
-	osThreadDef(Loop_Thread, osPriorityLow, 0, configMINIMAL_STACK_SIZE);
+	osThreadDef(Loop_Thread, osPriorityLow, 0, LOOP_STACK_SIZE);
 	osThreadDef_t *thread_def = (osThreadDef_t *)osThread(Loop_Thread);
 	thread_def->attr.name = "Loop-Task";
 
@@ -111,7 +112,7 @@ CMD_TYPE int do_loop(int argc, char * const argv[])
 
 	return xTaskCreate(Loop_Thread,
 			 	 	 "Loop-Task",
-					(( unsigned short )128),
+					(( unsigned short )LOOP_STACK_SIZE),
 					(void *)&_loop_t,
 					(UBaseType_t)osPriorityLow,
 					&Loop_Handle);
