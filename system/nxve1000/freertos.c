@@ -55,19 +55,24 @@ static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 }
 
 /*-----------------------------------------------------------*/
-#ifndef CMSIS_ENABLED
+/* implement for FreeRTOS and overwrite CMSIS's implement
+   called by taskCHECK_FOR_STACK_OVERFLOW */
 void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
     ( void ) pcTaskName;
     ( void ) pxTask;
 
+#if 1
     /* Run time stack overflow checking is performed if
     configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
     function is called if a stack overflow is detected. */
+    Printf("!!!!! StackOverflow so Terminate [%s] !!!!!\n", pcTaskName);
+    vTaskDelete(NULL);
+#else
     taskDISABLE_INTERRUPTS();
     for( ;; );
-}
 #endif
+}
 
 /*-----------------------------------------------------------*/
 #if ( configUSE_TICKLESS_IDLE == 1 )
