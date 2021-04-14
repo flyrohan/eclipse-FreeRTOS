@@ -492,9 +492,8 @@ static void rtos_TimerInit(void)
     ulStoppedTimerCompensation = portMISSED_COUNTS_FACTOR;
 	#endif /* configUSE_TICKLESS_IDLE */
 
-	SysTime_Register(&Timer_Op);
-	TIMER_Register(TIMER_CH, SYSTEM_CLOCK, TIMER_CLOCK_HZ, SYSTEM_TICK_HZ,
-				TIMER_MODE_PERIODIC);
+	TIMER_Register(TIMER_CH, SYSTEM_CLOCK, SYSTEM_TICK_HZ,
+				TIMER_MODE_PERIODIC, &Timer_Op);
 	TIMER_CallbackISR(TIMER_CH, (ISR_Callback)xPortSysTickHandler, NULL);
 }
 #endif
