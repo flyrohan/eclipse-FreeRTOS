@@ -91,31 +91,58 @@ pHandler __isr_vectors[] =
 
         // ----------------------------------------------------------------------
         // NXVE1000 vectors
-		DeviceInterrupt_Handler,	// (0)
-		DeviceInterrupt_Handler,	// (1)
-		DeviceInterrupt_Handler,	// (2)
-		DeviceInterrupt_Handler,	// (3)
-		DeviceInterrupt_Handler,	// (4)
-		DeviceInterrupt_Handler,	// (5)
-		DeviceInterrupt_Handler,	// (6)
-		DeviceInterrupt_Handler,	// (7)
-		DeviceInterrupt_Handler,	// (8)
-		DeviceInterrupt_Handler,	// (9)
-		DeviceInterrupt_Handler,	// (10)
-		DeviceInterrupt_Handler,	// (11)
-		DeviceInterrupt_Handler,	// (12)
-		DeviceInterrupt_Handler,	// (13)
-		Timer0_Handler,             // Timer0 handler (14)
-		Timer1_Handler,             // Timer1 handler (15)
-		Timer2_Handler,             // Timer2 handler (16)
-		Timer3_Handler,             // Timer3 handler (17)
-		Timer4_Handler,             // Timer4 handler (18)
-		Timer5_Handler,             // Timer5 handler (19)
-		Timer6_Handler,             // Timer6 handler (20)
-		Timer7_Handler,             // Timer7 handler (21)
-        DeviceInterrupt_Handler,	// Device specific
+		ALIVE_IRQHandler,				// The Alive handler 	(0)
+		ALIVE_TIMER_IRQHandler,			// The AliveTimer handler	(1)
+		WDT_IRQHandler,					// The WDT handler		(2)
+		GPIO_IRQHandler,				// The GPIO handler		(3)
+		I2C0_IRQHandler,				// The I2C0 handler		(4)
+		I2C1_IRQHandler,				// The I2C1 handler		(5)
+		SPI0_IRQHandler,				// The SPI0	handler		(6)
+		SPI1_IRQHandler,				// The SPI1	handler		(7)
+		SPI2_IRQHandler,				// The SPI2	handler		(8)
+		UART0_IRQHandler,				// The UART0 handler	(9)
+		UART1_IRQHandler,				// The UART1 handler	(10)
+		DeviceInterrupt_Handler,		// (11)
+		DeviceInterrupt_Handler,		// (12)
+		DMA_IRQHandler,					// The DMA handler		(13)
+		Timer0_IRQHandler,             	// Timer0 handler (14)
+		Timer1_IRQHandler,             	// Timer1 handler (15)
+		Timer2_IRQHandler,             	// Timer2 handler (16)
+		Timer3_IRQHandler,             	// Timer3 handler (17)
+		Timer4_IRQHandler,             	// Timer4 handler (18)
+		Timer5_IRQHandler,             	// Timer5 handler (19)
+		Timer6_IRQHandler,             	// Timer6 handler (20)
+		Timer7_IRQHandler,             	// Timer7 handler (21)
+		USB_IRQHandler,					// The GPIO handler		(22)
+		PLL_IRQHandler,					// The PLL handler		(23)
+		ADC_IRQHandler,					// The ADC handler		(24)
+		DeviceInterrupt_Handler,		// (25)
+		DeviceInterrupt_Handler,		// (26)
+		DeviceInterrupt_Handler,		// (27)
+		LVD_IRQHandler,					// The LVD handler		(28)
+		DeviceInterrupt_Handler,		// (29, 30, 31)
     // TODO: rename and add more vectors here
     };
+
+// ----------------------------------------------------------------------------
+#include <stddef.h>
+
+static ISR_Hnadler_t *isr_handler_t[28] = { };
+
+void ISR_Register(int irq, ISR_Hnadler_t *handler)
+{
+	isr_handler_t[irq] = handler;
+}
+
+void ISR_UnRegister(int irq)
+{
+	isr_handler_t[irq] = NULL;
+}
+
+#define _doISR(_irq)	do {	\
+		if (isr_handler_t[_irq]) \
+			isr_handler_t[_irq]->func(_irq, isr_handler_t[_irq]->argument);	\
+	} while (0)
 
 // ----------------------------------------------------------------------------
 
@@ -125,53 +152,78 @@ pHandler __isr_vectors[] =
 void __attribute__ ((section(".after_vectors")))
 Default_Handler(void)
 {
-  while (1)
-    {
-    }
-}
-// ----------------------------------------------------------------------------
-#include <stddef.h>
-
-static ISR_Hnadler_t isr_handler_t[28] = { };
-
-void ISR_Register(int irq, ISR_Handler handler, void *argument)
-{
-	isr_handler_t[irq].func = handler;
-	isr_handler_t[irq].argument = argument;
-}
-
-void ISR_UnRegister(int irq)
-{
-	isr_handler_t[irq].func = NULL;
-	isr_handler_t[irq].argument = NULL;
+	 _doISR((int)__get_IPSR() - 16);
 }
 
 // ----------------------------------------------------------------------------
-#define _doISR(_irq)	do {	\
-		if (isr_handler_t[_irq].func) \
-			isr_handler_t[_irq].func(_irq, isr_handler_t[_irq].argument);	\
-	} while (0)
+void __attribute__ ((weak, alias ("Default_Handler")))
+ALIVE_IRQHandler (void);
 
-void __attribute__ ((section(".after_vectors"),weak))
-Timer0_Handler(void) { _doISR(TIMER0_IRQn); }
+void __attribute__ ((weak, alias ("Default_Handler")))
+ALIVE_TIMER_IRQHandler (void);
 
-void __attribute__ ((section(".after_vectors"),weak))
-Timer1_Handler(void) { _doISR(TIMER1_IRQn); }
+void __attribute__ ((weak, alias ("Default_Handler")))
+WDT_IRQHandler (void);
 
-void __attribute__ ((section(".after_vectors"),weak))
-Timer2_Handler(void) { _doISR(TIMER2_IRQn); }
+void __attribute__ ((weak, alias ("Default_Handler")))
+GPIO_IRQHandler (void);
 
-void __attribute__ ((section(".after_vectors"),weak))
-Timer3_Handler(void) { _doISR(TIMER3_IRQn); }
+void __attribute__ ((weak, alias ("Default_Handler")))
+I2C0_IRQHandler (void);
 
-void __attribute__ ((section(".after_vectors"),weak))
-Timer4_Handler(void) { _doISR(TIMER4_IRQn); }
+void __attribute__ ((weak, alias ("Default_Handler")))
+I2C1_IRQHandler (void);
 
-void __attribute__ ((section(".after_vectors"),weak))
-Timer5_Handler(void) { _doISR(TIMER5_IRQn); }
+void __attribute__ ((weak, alias ("Default_Handler")))
+SPI0_IRQHandler (void);
 
-void __attribute__ ((section(".after_vectors"),weak))
-Timer6_Handler(void) { _doISR(TIMER6_IRQn); }
+void __attribute__ ((weak, alias ("Default_Handler")))
+SPI1_IRQHandler (void);
 
-void __attribute__ ((section(".after_vectors"),weak))
-Timer7_Handler(void) { _doISR(TIMER7_IRQn); }
+void __attribute__ ((weak, alias ("Default_Handler")))
+SPI2_IRQHandler (void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+UART0_IRQHandler (void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+UART1_IRQHandler (void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+DMA_IRQHandler (void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+Timer0_IRQHandler(void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+Timer1_IRQHandler(void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+Timer2_IRQHandler(void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+Timer3_IRQHandler(void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+Timer4_IRQHandler(void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+Timer5_IRQHandler(void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+Timer6_IRQHandler(void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+Timer7_IRQHandler(void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+USB_IRQHandler (void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+PLL_IRQHandler (void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+ADC_IRQHandler (void);
+
+void __attribute__ ((weak, alias ("Default_Handler")))
+LVD_IRQHandler (void);

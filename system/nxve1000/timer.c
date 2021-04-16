@@ -43,9 +43,6 @@ typedef struct {
   __IOM uint32_t TINT_CSTAT;	/* 0x18 */
 } Timer_Reg;
 
-/*
- * Timer HW
- */
 static struct TIMER_t {
 	Timer_Reg *base;
 	uint64_t timestamp;
@@ -125,6 +122,9 @@ void TIMER_Stop(int ch)
 }
 
 static void Timer_Handler(int irq, void *argument);
+static ISR_Hnadler_t timer_handler = {
+		.func = Timer_Handler,
+};
 
 int TIMER_Init(int ch, unsigned int infreq, TIMER_MODE_t mode)
 {
@@ -140,7 +140,7 @@ int TIMER_Init(int ch, unsigned int infreq, TIMER_MODE_t mode)
 	else
 		timer->tfreq = TIMER_CLOCK_PERIODIC_HZ;
 
-	ISR_Register(TIMER0_IRQn + ch, Timer_Handler, NULL);
+	ISR_Register(TIMER0_IRQn + ch, &timer_handler);
 
 	if (timer->mode == TIMER_MODE_PERIODIC) {
 		NVIC_SetPriority(timer->irqno, 0);

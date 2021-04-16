@@ -76,14 +76,30 @@ typedef enum IRQn
   SysTick_IRQn                  = -1,       /*!< 15 System Tick Interrupt                         */
 
 /******  Device Specific Interrupt Numbers ********************************************************/
-	TIMER0_IRQn                   = 14,     /*!< TIMER0 Interrupt */
-	TIMER1_IRQn                   = 15,     /*!< TIMER1 Interrupt */
-	TIMER2_IRQn                   = 16,     /*!< TIMER2 Interrupt */
-	TIMER3_IRQn                   = 17,     /*!< TIMER3 Interrupt */
-	TIMER4_IRQn                   = 18,     /*!< TIMER4 Interrupt */
-	TIMER5_IRQn                   = 19,     /*!< TIMER5 Interrupt */
-	TIMER6_IRQn                   = 20,     /*!< TIMER6 Interrupt */
-	TIMER7_IRQn                   = 21,     /*!< TIMER7 Interrupt */
+	ALIVE_IRQn                  = 0,      /*!< Alive Interrupt */
+	ALIVE_TIMER_IRQn       		= 1,      /*!< Alive Timer Interrupt */
+	WDT_IRQn                    = 2,      /*!< Watchdog Interrupt */
+	GPIO_IRQn                   = 3,      /*!< GPIO Interrupt */
+	I2C0_IRQn                   = 4,      /*!< I2C CH0 Interrupts */
+	I2C1_IRQn                   = 5,      /*!< I2C CH1 Interrupts */
+	SPI0_IRQn                   = 6,      /*!< SPI CH0 Interrupts */
+	SPI1_IRQn                   = 7,      /*!< SPI CH1 Interrupts */
+	SPI2_IRQn                   = 8,      /*!< SPI CH2 Interrupt */
+	UART0_IRQn                  = 9,      /*!< UART CH0 Interrupt */
+	UART1_IRQn                  = 10,     /*!< UART CH1 Interrupts */
+	DMA_IRQn                    = 13,     /*!< DMA Interrupts */
+	TIMER0_IRQn                 = 14,     /*!< TIMER0 Interrupt */
+	TIMER1_IRQn                 = 15,     /*!< TIMER1 Interrupt */
+	TIMER2_IRQn                 = 16,     /*!< TIMER2 Interrupt */
+	TIMER3_IRQn                 = 17,     /*!< TIMER3 Interrupt */
+	TIMER4_IRQn                 = 18,     /*!< TIMER4 Interrupt */
+	TIMER5_IRQn                 = 19,     /*!< TIMER5 Interrupt */
+	TIMER6_IRQn                 = 20,     /*!< TIMER6 Interrupt */
+	TIMER7_IRQn                 = 21,     /*!< TIMER7 Interrupt */
+	USB__IRQn                   = 22,     /*!< USB Interrupt */
+	PLL_IRQn                    = 23,     /*!< PLL Interrupt */
+	ADC_IRQn                    = 24,     /*!< ADC Interrupt */
+	LVD_IRQn                    = 28,     /*!< ADC Interrupt */
 } IRQn_Type;
 
 

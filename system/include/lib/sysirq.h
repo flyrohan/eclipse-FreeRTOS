@@ -16,7 +16,7 @@ typedef struct {
 	void *argument;
 } ISR_Callback_t;
 
-void ISR_Register(int irq, ISR_Handler handler, void *argument);
+void ISR_Register(int irq, ISR_Hnadler_t *handler);
 void ISR_UnRegister(int irq);
 
 #endif

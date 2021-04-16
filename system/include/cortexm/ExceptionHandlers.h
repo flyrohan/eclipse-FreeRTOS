@@ -55,28 +55,76 @@ extern "C"
   SysTick_Handler (void);
 
   extern void
-  Timer0_Handler (void);
+  ALIVE_IRQHandler (void);
 
   extern void
-  Timer1_Handler (void);
+  ALIVE_TIMER_IRQHandler (void);
 
   extern void
-  Timer2_Handler (void);
+  WDT_IRQHandler (void);
 
   extern void
-  Timer3_Handler (void);
+  GPIO_IRQHandler (void);
 
   extern void
-  Timer4_Handler (void);
+  I2C0_IRQHandler (void);
 
   extern void
-  Timer5_Handler (void);
+  I2C1_IRQHandler (void);
 
   extern void
-  Timer6_Handler (void);
+  SPI0_IRQHandler (void);
 
   extern void
-  Timer7_Handler (void);
+  SPI1_IRQHandler (void);
+
+  extern void
+  SPI2_IRQHandler (void);
+
+  extern void
+  UART0_IRQHandler (void);
+
+  extern void
+  UART1_IRQHandler (void);
+
+  extern void
+  DMA_IRQHandler (void);
+
+  extern void
+  Timer0_IRQHandler (void);
+
+  extern void
+  Timer1_IRQHandler (void);
+
+  extern void
+  Timer2_IRQHandler (void);
+
+  extern void
+  Timer3_IRQHandler (void);
+
+  extern void
+  Timer4_IRQHandler (void);
+
+  extern void
+  Timer5_IRQHandler (void);
+
+  extern void
+  Timer6_IRQHandler (void);
+
+  extern void
+  Timer7_IRQHandler (void);
+
+  extern void
+  USB_IRQHandler (void);
+
+  extern void
+  PLL_IRQHandler (void);
+
+  extern void
+  ADC_IRQHandler (void);
+
+  extern void
+  LVD_IRQHandler (void);
 
   // Exception Stack Frame of the Cortex-M3 or Cortex-M4 processor.
   typedef struct
