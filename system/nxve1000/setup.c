@@ -59,7 +59,9 @@ void __attribute__((weak)) HAL_SystemInit(void)
 {
 	System_Remap();
 
+#ifdef PLL_ENABLED
 	PLL_SetFrequency(SYSTEM_CLOCK);
+#endif
 
 	SYS_eFlashInit();
 	SYS_GpioInit();
