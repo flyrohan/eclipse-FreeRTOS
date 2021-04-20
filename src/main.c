@@ -33,11 +33,14 @@
 #define _MHZ(_hz)	(_hz/1000000)
 
 #ifdef RTOS_ENABLED
+#define CLI_STACK_DEPTH		(512)			/* 256 * sizeof( StackType_t ) */
+#define CLI_PRIORITY		osPriorityLow	/* osPriorityLow, osPriorityHigh */
+
 static void RunCLI(void)
 {
 	Printf("\r\n\r\n***** FREERTOS %ld MHZ *****\r\n\r\n", _MHZ(SYSTEM_CLOCK));
 #ifdef CLI_ENABLED
-	CLI_RunLoopThread(1024, osPriorityLow);
+	CLI_RunLoopThread(CLI_STACK_DEPTH, CLI_PRIORITY);
 #endif
 	HAL_RunRTOS();
 }
