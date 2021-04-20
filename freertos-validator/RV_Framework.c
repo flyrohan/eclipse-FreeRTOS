@@ -106,9 +106,46 @@ cmsis_rv (void) {
 */ 
 // end of group framework_funcs
 #ifdef CMD_ENABLED
+
+#define CMSIS_RV_THREAD		(1)
+
+#if (CMSIS_RV_THREAD)
+#include "cmsis_os.h"
+
+#define CMSIS_RV_STACK_SIZE		(1024)
+#define CMSIS_RV_PRIORITY		osPriorityLow	/* osPriorityLow, osPriorityHigh */
+
+static void cmsis_rv_Thread(void const *argument __attribute__((unused)));
+static osThreadDef (cmsis_rv_Thread, osPriorityNormal, CMSIS_RV_PRIORITY, CMSIS_RV_STACK_SIZE);
+static osThreadId cmsis_rv_Handle = NULL;
+static uint32_t signal_terminate = 0x1;
+
+static void cmsis_rv_Thread(void const *argument)
+{
+	osThreadId id = *(osThreadId *)argument;
+
+	cmsis_rv();
+	osThreadFlagsSet(id, signal_terminate);
+}
+#endif
+
 CMD_TYPE int do_cmsis(int argc __attribute__((unused)), char * const argv[] __attribute__((unused)))
 {
+#if (CMSIS_RV_THREAD)
+	osThreadId id = osThreadGetId();
+
+	if (cmsis_rv_Handle) {
+		eTaskState tstate = eTaskGetState ((TaskHandle_t)cmsis_rv_Handle);
+		if (tstate != eDeleted)
+			osThreadFlagsWait(signal_terminate, osFlagsWaitAll, osWaitForever);
+		cmsis_rv_Handle = NULL;
+	}
+
+	cmsis_rv_Handle = osThreadCreate(osThread(cmsis_rv_Thread), &id);
+#else
 	cmsis_rv();
+#endif
+
 	return 0;
 }
 CMD_DEFINE(cmsis, do_cmsis);
