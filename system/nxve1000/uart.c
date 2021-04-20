@@ -2,6 +2,19 @@
 #include <io.h>
 #include <config.h>
 
+#ifdef RTOS_ENABLED
+#include <FreeRTOSConfig.h>
+#include <FreeRTOS.h>
+#include <task.h>
+
+#define	WAIT(_n)	do { \
+		if (xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED)	\
+			vTaskDelay(_n);	\
+		} while (0)
+#else
+#define	WAIT(_n)
+#endif
+
 #ifdef UART_ENABLED
 
 #ifndef UART_BAUDRATE
@@ -107,7 +120,7 @@ int UART_Tstc(void)
 int UART_ReadByte(void)
 {
 	while ((serial_in(UART_REG_LSR) & UART_LSR_DR) == 0) {
-		;
+		WAIT(1);
 	}
 	return (int)serial_in(UART_REG_RBR);
 }
@@ -115,7 +128,7 @@ int UART_ReadByte(void)
 void UART_WriteByte(const char c)
 {
 	while ((serial_in(UART_REG_LSR) & UART_LSR_THRE) == 0) {
-		;
+		WAIT(1);
 	}
 	serial_out(c, UART_REG_THR);
 }
