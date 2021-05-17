@@ -33,6 +33,8 @@
 #define TINT_STATUS    			BIT(5)
 #define TINT_ENABLE    			BIT(0)
 
+#define _mask(_v, _m)			(_v & ~(uint32_t)_m)
+
 typedef struct {
   __IOM uint32_t TCFG0;			/* 0x00 */
   __IOM uint32_t TCFG1;			/* 0x04 */
