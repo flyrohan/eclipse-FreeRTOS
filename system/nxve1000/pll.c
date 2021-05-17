@@ -54,10 +54,10 @@
 #define SET_ALIVETIMERSOURCE_BW		1
 
 #define _WRITE_FIELD(_addr, _field, _val)	do { \
-		_writebits(_addr, _field##_BP, _field##_BW, _val);	\
+		_writebit(_addr, _field##_BP, _field##_BW, _val);	\
         } while (0)
 
-#define _READ_FIELD(_addr, _field)		_readbits(_addr, _field##_BP, _field##_BW)
+#define _READ_FIELD(_addr, _field)		_readbit(_addr, _field##_BP, _field##_BW)
 
 typedef struct {
 	int p;
