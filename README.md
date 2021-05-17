@@ -3,7 +3,7 @@
 Base Code
 	- based on eclipse-firmware
 
-	FreeRTOS					: v10.4.1
+	FreeRTOS					: v10.4.3
 	CMSIS						: 5.7.0
 	arm-cmsis-rtos-validator	: xpack
 
@@ -79,7 +79,9 @@ Base Code
 		- Add main.c
 
 --------------------------------------------------------------------------------
-2. Base Porting FreeRTOS with FreeRTOS github 
+2. Base Porting FreeRTOS with FreeRTOS github
+
+	https://github.com/FreeRTOS/FreeRTOS-Kernel/tree/V10.4.3 
 --------------------------------------------------------------------------------
 
 	Porting FreeRTOS with FreeRTOS git to firmware source
