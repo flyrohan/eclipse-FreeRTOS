@@ -5,8 +5,8 @@
 #define setbit(_a, _bit)				((_a) |= (1 << _bit))
 #define clrbit(_a, _bit)				((_a) &= ~(1 << _bit))
 
-#define readl(_a)						(*(volatile uint32_t *)(_a))
-#define writel(_v, _a)					(*(volatile uint32_t *)(_a) = ((uint32_t)_v))
+#define readl(_a)						(*(volatile uint32_t *)((uint32_t)_a))
+#define writel(_v, _a)					(*(volatile uint32_t *)((uint32_t)_a) = ((uint32_t)_v))
 
 #define _maskbit(_p, _w)              	(((1 << _w) - 1) << _p)
 #define _getsftbit(_d, _p, _w)       	(((_d) & _maskbit(_p, _w)) >> _p)

@@ -26,33 +26,32 @@ typedef struct __I2C_BUS {
 #define I2C_MODE_MR		0x80	/* Master Receive Mode */
 #define I2C_START_STOP	0x20	/* START / STOP */
 #define I2C_TXRX_ENA	0x10	/* I2C Tx/Rx enable */
-#define I2C_TIMEOUT_MS 	(100)	/* 10 ms */
+#define I2C_TIMEOUT_MS 	(10)	/* 10 ms */
+#define I2C_CHS 		(2)
 
-static const I2C_BUS i2c_bus[2] = {
+static const I2C_BUS i2c_bus[I2C_CHS] = {
 	[0] = { .reg = (I2C_REG *)0x43000000, },
 	[1] = { .reg = (I2C_REG *)0x43010000, },
 };
 
-
-#define __DEBUG__
 #ifdef __DEBUG__
-#define DBG(msg...)		Printf(msg);
+#define DBG(msg...)					Printf(msg);
 #else
-#define DBG(msg...)
+#define DBG(msg...)					do {} while(0)
 #endif
-#define ERR(msg...)		Printf(msg);
+#define ERR(msg...)					Printf(msg);
 
 #ifdef RTOS_ENABLED
- #ifndef CMSIS_ENABLED
- #define GetTime()		xTaskGetTickCount()
- #else
- #define GetTime()		osKernelGetTickCount()
- #endif
+#ifdef CMSIS_ENABLED
+#define GetTime()		(uint32_t)osKernelGetTickCount()
+#else
+#define GetTime()		xTaskGetTickCount()
+#endif
 #else
 #define GetTime()		SysTime_GetTime()
 #endif
 
-static int WaitForXfer(I2C_REG *i2c, uint32_t timeout)
+static int WaitForXFer(I2C_REG *i2c, uint32_t timeout)
 {
 	uint32_t start_time = GetTime();
 
@@ -65,12 +64,12 @@ static int WaitForXfer(I2C_REG *i2c, uint32_t timeout)
 	return I2C_NOK_TOUT;
 }
 
-static void read_write_byte(I2C_REG *i2c)
+static void ClearXFer(I2C_REG *i2c)
 {
 	clr_bit(&i2c->I2CCON, I2CCON_IRPND);
 }
 
-static int i2c_do_msg(int ch, struct i2c_msg *msg, int seq)
+static int I2C_Msg(int ch, I2C_MSG *msg, int seq)
 {
 	I2C_REG *i2c = i2c_bus[ch].reg;
 	int is_read = msg->flags & I2C_M_RD;
@@ -94,10 +93,10 @@ static int i2c_do_msg(int ch, struct i2c_msg *msg, int seq)
 	writel(i2cstat, &i2c->I2CSTAT);
 
 	if (seq)
-		read_write_byte(i2c);
+		ClearXFer(i2c);
 
 	/* Wait for chip address to transmit */
-	ret = WaitForXfer(i2c, I2C_TIMEOUT_MS);
+	ret = WaitForXFer(i2c, I2C_TIMEOUT_MS);
 	if (ret)
 		goto err;
 
@@ -106,8 +105,8 @@ static int i2c_do_msg(int ch, struct i2c_msg *msg, int seq)
 			if (i == msg->len - 1)
 				clr_bit(&i2c->I2CCON, I2CCON_ACKGEN);
 
-			read_write_byte(i2c);
-			ret = WaitForXfer(i2c, I2C_TIMEOUT_MS);
+			ClearXFer(i2c);
+			ret = WaitForXFer(i2c, I2C_TIMEOUT_MS);
 
 			msg->buf[i] = (uint8_t)readl(&i2c->I2CDS);
 		}
@@ -118,8 +117,8 @@ static int i2c_do_msg(int ch, struct i2c_msg *msg, int seq)
 	} else {
 		for (i = 0; !ret && i < msg->len; i++) {
 			writel(msg->buf[i], &i2c->I2CDS);
-			read_write_byte(i2c);
-			ret = WaitForXfer(i2c, I2C_TIMEOUT_MS);
+			ClearXFer(i2c);
+			ret = WaitForXFer(i2c, I2C_TIMEOUT_MS);
 		}
 	}
 
@@ -127,7 +126,7 @@ err:
 	return ret;
 }
 
-static void i2c_set_bus(int ch)
+static void I2C_SetBus(int ch)
 {
 	I2C_REG *i2c = i2c_bus[ch].reg;
 	int filter_enable = 1;
@@ -148,13 +147,17 @@ static void i2c_set_bus(int ch)
 	writel(((sda_delay & 0x3) | filter_enable << 2), &i2c->I2CLC);
 }
 
-int i2c_xfer(int ch, struct i2c_msg *msg, int nmsgs)
+int I2C_XFer(int ch, I2C_MSG *msg, int nmsgs)
 {
-	I2C_REG *i2c = i2c_bus[ch].reg;
+	I2C_REG *i2c;
 	uint32_t start_time;
 	int ret, i;
 
-	i2c_set_bus(ch);
+	if (ch > (I2C_CHS - 1))
+		return -1;
+
+	i2c = i2c_bus[ch].reg;
+	I2C_SetBus(ch);
 
 	start_time = GetTime();
 	while (readl(&i2c->I2CSTAT) & I2CSTAT_BSY) {
@@ -165,25 +168,25 @@ int i2c_xfer(int ch, struct i2c_msg *msg, int nmsgs)
 	}
 
 	for (ret = 0, i = 0; !ret && i < nmsgs; i++)
-		ret = i2c_do_msg(ch, &msg[i], i);
+		ret = I2C_Msg(ch, &msg[i], i);
 
 	/* Send STOP */
 	writel(I2C_MODE_MR | I2C_TXRX_ENA, &i2c->I2CSTAT);
-	read_write_byte(i2c);
+	ClearXFer(i2c);
 
 	return ret ? -I2C_NOK : I2C_OK;
 }
 
-int i2c_probe(int ch, uint32_t chip)
+int I2C_Probe(int ch, uint32_t chip)
 {
 	uint8_t buf;
-    struct i2c_msg msg = {
+    I2C_MSG msg = {
     	.addr = chip,
     	.flags = !I2C_M_RD,
     	.buf = &buf,
     	.len = 1,
     };
 
-	return (int)i2c_xfer(ch, &msg, 1);
+	return (int)I2C_XFer(ch, &msg, 1);
 }
 #endif
